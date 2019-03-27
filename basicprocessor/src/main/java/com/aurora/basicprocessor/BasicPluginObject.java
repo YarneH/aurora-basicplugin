@@ -20,4 +20,8 @@ public class BasicPluginObject extends PluginObject {
         mResult = result;
     }
 
+    public static PluginObject fromJson(String json){
+        return mGson.fromJson(json, BasicPluginObject.class);
+    }
+
 }
