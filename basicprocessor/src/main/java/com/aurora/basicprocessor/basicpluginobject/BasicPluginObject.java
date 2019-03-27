@@ -1,4 +1,4 @@
-package com.aurora.basicprocessor;
+package com.aurora.basicprocessor.basicpluginobject;
 
 import com.aurora.auroralib.PluginObject;
 

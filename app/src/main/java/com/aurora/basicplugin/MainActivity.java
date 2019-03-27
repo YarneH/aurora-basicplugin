@@ -8,8 +8,8 @@ import android.widget.TextView;
 
 import com.aurora.auroralib.Constants;
 import com.aurora.auroralib.ExtractedText;
-import com.aurora.basicprocessor.BasicPluginObject;
-import com.aurora.basicprocessor.BasicProcessorCommunicator;
+import com.aurora.basicprocessor.basicpluginobject.BasicPluginObject;
+import com.aurora.basicprocessor.facade.BasicProcessorCommunicator;
 
 public class MainActivity extends AppCompatActivity {
     //private static final BasicProcessorCommunicator mProcessorCommunicator = new BasicProcessorCommunicator();
