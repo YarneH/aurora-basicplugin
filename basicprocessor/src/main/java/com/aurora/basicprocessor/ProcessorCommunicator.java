@@ -1,14 +1,17 @@
 package com.aurora.basicprocessor;
 
-public class ProcessorCommunicator {
+import com.aurora.auroralib.ExtractedText;
+import com.aurora.auroralib.PluginObject;
 
-    public ProcessorCommunicator(){
+public abstract class ProcessorCommunicator {
+    private PluginObject mPluginObject;
 
-    }
+    public abstract PluginObject process(ExtractedText extractedText);
 
-    public static BasicPluginObject delegate(String inputText){
+
+    /*public static BasicPluginObject delegate(String inputText){
         BasicPluginObject res = new BasicPluginObject();
         res.setResult("Basic Plugin processed:\n" + inputText);
         return res;
-    }
+    }*/
 }
