@@ -1,7 +1,9 @@
-package com.aurora.basicprocessor;
+package com.aurora.basicprocessor.facade;
 
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.PluginObject;
+import com.aurora.basicprocessor.ProcessorCommunicator;
+import com.aurora.basicprocessor.basicpluginobject.BasicPluginObject;
 
 public class BasicProcessorCommunicator extends ProcessorCommunicator {
 
@@ -12,14 +14,7 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
     @Override
     public PluginObject process(ExtractedText extractedText) {
         BasicPluginObject res = new BasicPluginObject();
-        String concatenatedParagraphs = "";
-        if (extractedText.getParagraphs() != null) {
-            for (String s : extractedText.getParagraphs()) {
-                concatenatedParagraphs += s + '\n';
-            }
-        }
-
-        res.setResult("Basic Plugin processed:\n" + extractedText.getTitle() + '\n' + concatenatedParagraphs);
+        res.setResult("Basic Plugin processed:\n" + extractedText.toString());
         return res;
     }
 
