@@ -5,6 +5,9 @@ import com.aurora.auroralib.PluginObject;
 import com.aurora.basicprocessor.ProcessorCommunicator;
 import com.aurora.basicprocessor.basicpluginobject.BasicPluginObject;
 
+/**
+ * Communicator interface to the BasicProcessor
+ */
 public class BasicProcessorCommunicator extends ProcessorCommunicator {
 
     public BasicProcessorCommunicator(){}
