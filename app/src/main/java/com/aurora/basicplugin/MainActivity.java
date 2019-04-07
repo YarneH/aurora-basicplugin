@@ -14,6 +14,7 @@ import com.aurora.basicprocessor.facade.BasicProcessorCommunicator;
 public class MainActivity extends AppCompatActivity {
     //private static final BasicProcessorCommunicator mProcessorCommunicator = new BasicProcessorCommunicator();
     private TextView mTextView;
+    // TODO: This should be singleton-like
     private BasicProcessorCommunicator mBasicProcessorCommunicator = new BasicProcessorCommunicator();
 
     @Override
@@ -28,13 +29,14 @@ public class MainActivity extends AppCompatActivity {
 
             BasicPluginObject basicPluginObject = null;
 
-            // TODO remove this if statement probably. Is currently used to handle cases where a plain String is sent instead of an ExtractedText
+            // TODO remove this if statement probably. Is currently used to handle cases where a plain
+            // String is sent instead of an ExtractedText
             if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TEXT)) {
                 String inputText = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TEXT);
                 basicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.process(inputText);
             }
 
-            if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
+            else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
                 String inputTextJSON = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT);
                 ExtractedText inputText = ExtractedText.fromJson(inputTextJSON);
                 basicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.process(inputText);
@@ -43,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
             // TODO handle a PluginObject that was cached
             else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)){
-
+                return;
             }
 
             if (basicPluginObject != null){

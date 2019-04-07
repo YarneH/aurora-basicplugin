@@ -7,9 +7,7 @@ import com.aurora.basicprocessor.basicpluginobject.BasicPluginObject;
 
 public class BasicProcessorCommunicator extends ProcessorCommunicator {
 
-    public BasicProcessorCommunicator(){
-
-    }
+    public BasicProcessorCommunicator(){}
 
     @Override
     public PluginObject process(ExtractedText extractedText) {
@@ -25,13 +23,4 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
         res.setResult("Basic Plugin processed:\n" + inputText);
         return res;
     }
-
-
-    /*
-    public static BasicPluginObject delegate(String inputText){
-        BasicPluginObject res = new BasicPluginObject();
-        res.setResult("Basic Plugin processed:\n" + inputText);
-        return res;
-    }
-    */
 }
