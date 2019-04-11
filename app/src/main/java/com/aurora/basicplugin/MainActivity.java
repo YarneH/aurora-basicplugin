@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
 
+import com.aurora.auroralib.CacheServiceCaller;
 import com.aurora.auroralib.Constants;
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.basicprocessor.basicpluginobject.BasicPluginObject;
@@ -16,6 +17,7 @@ public class MainActivity extends AppCompatActivity {
      *  Textview for showing the processed text
      */
     private TextView mTextView;
+    private CacheServiceCaller mCacheServiceCaller;
 
     // TODO: This should be singleton-like
     /**
@@ -29,6 +31,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mTextView = (TextView) findViewById(R.id.textView);
+        mCacheServiceCaller = new CacheServiceCaller(getApplicationContext());
+        mCacheServiceCaller.bindService();
+
+        //Remove this
+        BasicPluginObject testBasicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.process("test", getApplicationContext());
+        String testresult = testBasicPluginObject.getResult();
+        mTextView.setText(testresult);
 
         // Handle the data that came with the intent that opened BasicPlugin
         Intent intentThatStartedThisActivity = getIntent();
@@ -40,14 +49,14 @@ public class MainActivity extends AppCompatActivity {
             // String is sent instead of an ExtractedText
             if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TEXT)) {
                 String inputText = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TEXT);
-                basicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.process(inputText);
+                basicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.process(inputText, getApplicationContext());
             }
 
             // Handle ExtractedText object (received when first opening a new file)
             else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
                 String inputTextJSON = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT);
                 ExtractedText inputText = ExtractedText.fromJson(inputTextJSON);
-                basicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.process(inputText);
+                basicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.process(inputText, getApplicationContext());
             }
 
             // TODO handle a BasicPluginObject that was cached (will come in Json format)
@@ -61,5 +70,11 @@ public class MainActivity extends AppCompatActivity {
                 mTextView.setText(result);
             }
         }
+    }
+
+    protected void onDestroy(){
+        mCacheServiceCaller.unbindService();
+
+        super.onDestroy();
     }
 }

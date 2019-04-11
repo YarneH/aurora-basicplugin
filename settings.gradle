@@ -1,1 +1,1 @@
-include ':app', ':basicprocessor', ':auroralib'
+include ':app', ':basicprocessor', ':auroralib', ':auroralib-debug'
