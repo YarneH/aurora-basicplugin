@@ -2,8 +2,13 @@ package com.aurora.basicplugin;
 
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.aurora.auroralib.Constants;
@@ -28,7 +33,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mTextView = (TextView) findViewById(R.id.textView);
+        mTextView = findViewById(R.id.textView);
+        mTextView.setMovementMethod(new ScrollingMovementMethod());
 
         // Handle the data that came with the intent that opened BasicPlugin
         Intent intentThatStartedThisActivity = getIntent();
@@ -59,7 +65,23 @@ public class MainActivity extends AppCompatActivity {
             if (basicPluginObject != null){
                 String result = basicPluginObject.getResult();
                 mTextView.setText(result);
+
+                if(!basicPluginObject.getImages().isEmpty()) {
+                    LinearLayout imageGallery = findViewById(R.id.imageGallery);
+                    for (Bitmap image : basicPluginObject.getImages()) {
+                        imageGallery.addView(getImageView(image));
+                    }
+                }
             }
         }
+    }
+
+    private View getImageView(Bitmap image) {
+        ImageView imageView = new ImageView(getApplicationContext());
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(0, 0, 10, 0);
+        imageView.setLayoutParams(lp);
+        imageView.setImageBitmap(image);
+        return imageView;
     }
 }

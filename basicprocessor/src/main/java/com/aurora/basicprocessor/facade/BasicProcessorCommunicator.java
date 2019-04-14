@@ -1,16 +1,25 @@
 package com.aurora.basicprocessor.facade;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Base64;
+import android.util.Log;
+
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.PluginObject;
+import com.aurora.auroralib.Section;
 import com.aurora.basicprocessor.ProcessorCommunicator;
 import com.aurora.basicprocessor.basicpluginobject.BasicPluginObject;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 public class BasicProcessorCommunicator extends ProcessorCommunicator {
 
     public BasicProcessorCommunicator(){}
 
     /**
-     * Very simple process function that just adds some text to extractedText
+     * Very simple process function that just adds some text to extractedText //TODO
      *
      * @param extractedText The text that was extracted after Aurora's internal processing
      * @return A string that consists of standard text and the result of extractedText.toString()
@@ -19,6 +28,23 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
     public PluginObject process(ExtractedText extractedText) {
         BasicPluginObject res = new BasicPluginObject();
         res.setResult("Basic Plugin processed:\n" + extractedText.toString());
+
+        for (Section section: extractedText.getSections()) {
+            if(section.getImages() != null && !section.getImages().isEmpty()) {
+                for (String image: section.getImages()) {
+                    try{
+                        InputStream stream = new ByteArrayInputStream(Base64.decode(image.getBytes()
+                                , Base64.DEFAULT));
+                        Bitmap imageBitmap = BitmapFactory.decodeStream(stream);
+                        res.getImages().add(imageBitmap);
+                    }
+                    catch (Exception e) {
+                        Log.e("IMAGE_LOADER", "Failed to load or decode an image", e);
+                    }
+                }
+            }
+        }
+
         return res;
     }
 
