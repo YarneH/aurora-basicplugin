@@ -35,7 +35,8 @@ public class MainActivity extends AppCompatActivity {
         mCacheServiceCaller.bindService();
 
         //Remove this
-        BasicPluginObject testBasicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.process("test", getApplicationContext());
+        BasicPluginObject testBasicPluginObject = (BasicPluginObject)
+                mBasicProcessorCommunicator.process("test", getApplicationContext());
         String testresult = testBasicPluginObject.getResult();
         mTextView.setText(testresult);
 
@@ -49,14 +50,17 @@ public class MainActivity extends AppCompatActivity {
             // String is sent instead of an ExtractedText
             if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TEXT)) {
                 String inputText = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TEXT);
-                basicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.process(inputText, getApplicationContext());
+                basicPluginObject = (BasicPluginObject)
+                        mBasicProcessorCommunicator.process(inputText, getApplicationContext());
             }
 
             // Handle ExtractedText object (received when first opening a new file)
             else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
-                String inputTextJSON = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT);
+                String inputTextJSON =
+                        intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT);
                 ExtractedText inputText = ExtractedText.fromJson(inputTextJSON);
-                basicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.process(inputText, getApplicationContext());
+                basicPluginObject = (BasicPluginObject)
+                        mBasicProcessorCommunicator.process(inputText, getApplicationContext());
             }
 
             // TODO handle a BasicPluginObject that was cached (will come in Json format)
