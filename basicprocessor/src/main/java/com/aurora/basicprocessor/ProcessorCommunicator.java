@@ -2,6 +2,7 @@ package com.aurora.basicprocessor;
 
 import android.content.Context;
 
+import com.aurora.auroralib.CacheServiceCaller;
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.PluginObject;
 
@@ -17,6 +18,6 @@ public abstract class ProcessorCommunicator {
      * @param extractedText The text that was extracted after Aurora's internal processing
      * @return The PluginObject that is the result of the plugin's processing of the extractedText
      */
-    public abstract PluginObject process(ExtractedText extractedText, Context context);
+    public abstract PluginObject process(ExtractedText extractedText, CacheServiceCaller cacheServiceCaller);
 
 }

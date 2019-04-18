@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Remove this
         BasicPluginObject testBasicPluginObject = (BasicPluginObject)
-                mBasicProcessorCommunicator.process("test", getApplicationContext());
+                mBasicProcessorCommunicator.process("test", mCacheServiceCaller);
         String testresult = testBasicPluginObject.getResult();
         mTextView.setText(testresult);
 
@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
             if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TEXT)) {
                 String inputText = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TEXT);
                 basicPluginObject = (BasicPluginObject)
-                        mBasicProcessorCommunicator.process(inputText, getApplicationContext());
+                        mBasicProcessorCommunicator.process(inputText, mCacheServiceCaller);
             }
 
             // Handle ExtractedText object (received when first opening a new file)
@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
                         intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT);
                 ExtractedText inputText = ExtractedText.fromJson(inputTextJSON);
                 basicPluginObject = (BasicPluginObject)
-                        mBasicProcessorCommunicator.process(inputText, getApplicationContext());
+                        mBasicProcessorCommunicator.process(inputText, mCacheServiceCaller);
             }
 
             // TODO handle a BasicPluginObject that was cached (will come in Json format)

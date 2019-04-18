@@ -22,9 +22,8 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
      * @return A string that consists of standard text and the result of extractedText.toString()
      */
     @Override
-    public PluginObject process(ExtractedText extractedText, Context context) {
+    public PluginObject process(ExtractedText extractedText, CacheServiceCaller serviceCaller) {
         BasicPluginObject res = new BasicPluginObject();
-        CacheServiceCaller serviceCaller = new CacheServiceCaller(context);
         int cacheResult = serviceCaller.cache(res.toJSON());
         res.setResult("Basic Plugin processed and cached with result:" + cacheResult + "\n" + extractedText.toString());
         return res;
@@ -40,9 +39,8 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
      * @param inputText The string that has to be processed
      * @return A string that consists of standard text and the inputText
      */
-    public PluginObject process(String inputText, Context context) {
+    public PluginObject process(String inputText, CacheServiceCaller serviceCaller) {
         BasicPluginObject res = new BasicPluginObject();
-        CacheServiceCaller serviceCaller = new CacheServiceCaller(context);
         int cacheResult = serviceCaller.cache(res.toJSON());
         res.setResult("Basic Plugin processed and cached with result:" + cacheResult + "\n" + inputText);
 
