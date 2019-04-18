@@ -23,14 +23,14 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Communicator that acts as an interface to the BasicPlugin's processor
      */
-    private BasicProcessorCommunicator mBasicProcessorCommunicator = new BasicProcessorCommunicator();
+    private final BasicProcessorCommunicator mBasicProcessorCommunicator = new BasicProcessorCommunicator();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mTextView = (TextView) findViewById(R.id.textView);
+        mTextView = findViewById(R.id.textView);
         mCacheServiceCaller = new CacheServiceCaller(getApplicationContext());
         mCacheServiceCaller.bindService();
 
