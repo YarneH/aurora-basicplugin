@@ -13,6 +13,14 @@ import com.aurora.basicprocessor.basicpluginobject.BasicPluginObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.List;
+
+import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.CoreNLPProtos;
+import edu.stanford.nlp.pipeline.ProtobufAnnotationSerializer;
+import edu.stanford.nlp.util.CoreMap;
 
 public class BasicProcessorCommunicator extends ProcessorCommunicator {
 
@@ -41,6 +49,18 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
                     catch (Exception e) {
                         Log.e("IMAGE_LOADER", "Failed to load or decode an image", e);
                     }
+                }
+            }
+        }
+
+        if(extractedText.getTitleAnnotation() != null) {
+            List<CoreMap> sentences = extractedText.getTitleAnnotation().get(CoreAnnotations.SentencesAnnotation.class);
+
+            for (CoreMap sentence : sentences) {
+                List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
+                if (tokens.size() > 0) {
+                    CoreLabel token = tokens.get(0);
+                    Log.d("NLP", token.tag());
                 }
             }
         }
