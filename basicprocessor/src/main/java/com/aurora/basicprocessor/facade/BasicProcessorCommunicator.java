@@ -53,14 +53,8 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
             }
         }
 
-        if(extractedText.getTitleAnnotations() != null) {
-            CoreNLPProtos.Document titleAnnotations = extractedText.getTitleAnnotations();
-
-            ProtobufAnnotationSerializer annotationSerializer =
-                    new ProtobufAnnotationSerializer(true);
-            Annotation titleAnnotation =
-                    annotationSerializer.fromProto(extractedText.getTitleAnnotations());
-            List<CoreMap> sentences = titleAnnotation.get(CoreAnnotations.SentencesAnnotation.class);
+        if(extractedText.getTitleAnnotation() != null) {
+            List<CoreMap> sentences = extractedText.getTitleAnnotation().get(CoreAnnotations.SentencesAnnotation.class);
 
             for (CoreMap sentence : sentences) {
                 List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
