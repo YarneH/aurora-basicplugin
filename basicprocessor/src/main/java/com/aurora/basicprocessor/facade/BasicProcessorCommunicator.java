@@ -4,16 +4,16 @@ import android.content.Context;
 
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.PluginObject;
-import com.aurora.auroralib.CacheServiceCaller;
-import com.aurora.basicprocessor.ProcessorCommunicator;
+import com.aurora.auroralib.ProcessorCommunicator;
 import com.aurora.basicprocessor.basicpluginobject.BasicPluginObject;
 
 /**
  * Communicator interface to the BasicProcessor
  */
 public class BasicProcessorCommunicator extends ProcessorCommunicator {
-
-    public BasicProcessorCommunicator(){}
+    public BasicProcessorCommunicator(Context context){
+        super(context);
+    }
 
     /**
      * Very simple process function that just adds some text to extractedText
@@ -22,10 +22,9 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
      * @return A string that consists of standard text and the result of extractedText.toString()
      */
     @Override
-    public PluginObject process(ExtractedText extractedText, CacheServiceCaller serviceCaller) {
+    protected PluginObject process(ExtractedText extractedText) {
         BasicPluginObject res = new BasicPluginObject();
-        int cacheResult = serviceCaller.cache(res.toJSON());
-        res.setResult("Basic Plugin processed and cached with result:" + cacheResult + "\n" + extractedText.toString());
+        res.setResult("Basic Plugin processed and cached with result:" + "\n" + extractedText.toString());
         return res;
     }
 
@@ -39,12 +38,33 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
      * @param inputText The string that has to be processed
      * @return A string that consists of standard text and the inputText
      */
-    public PluginObject process(String inputText, CacheServiceCaller serviceCaller) {
+    @Override
+    protected PluginObject process(String inputText) {
         BasicPluginObject res = new BasicPluginObject();
-        int cacheResult = serviceCaller.cache(res.toJSON());
-        res.setResult("Basic Plugin processed and cached with result:" + cacheResult + "\n" + inputText);
-
-        //res.setResult("Basic Plugin processed:\n" + inputText);
+        res.setResult("Basic Plugin processed:\n" + inputText);
         return res;
     }
+
+
+    /*
+    private class ProcessorCacheThread extends Thread {
+        private int mCacheResult = -1000; // - 1000 means that the cache service from Aurora has not been reached
+        private BasicPluginObject pluginObject;
+        private CacheServiceCaller mCacheServiceCaller;
+
+        protected ProcessorCacheThread(BasicPluginObject pluginObject, CacheServiceCaller cacheServiceCaller) {
+            this.pluginObject = pluginObject;
+            this.mCacheServiceCaller = cacheServiceCaller;
+        }
+
+        protected int getCacheResult() {
+            return mCacheResult;
+        }
+
+        public void run() {
+            int cacheResult = mCacheServiceCaller.cacheOperation(pluginObject.toJSON());
+            Log.d("PROCESSOR_CACHE_THREAD", "" + cacheResult);
+        }
+    }*/
+
 }

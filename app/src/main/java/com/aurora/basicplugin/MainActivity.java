@@ -17,13 +17,12 @@ public class MainActivity extends AppCompatActivity {
      *  Textview for showing the processed text
      */
     private TextView mTextView;
-    private CacheServiceCaller mCacheServiceCaller;
 
     // TODO: This should be singleton-like
     /**
      * Communicator that acts as an interface to the BasicPlugin's processor
      */
-    private final BasicProcessorCommunicator mBasicProcessorCommunicator = new BasicProcessorCommunicator();
+    private BasicProcessorCommunicator mBasicProcessorCommunicator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,12 +30,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mTextView = findViewById(R.id.textView);
-        mCacheServiceCaller = new CacheServiceCaller(getApplicationContext());
-        mCacheServiceCaller.bindService();
+
+        //mCacheServiceCaller.bindService();
+        mBasicProcessorCommunicator = new BasicProcessorCommunicator(getApplicationContext());
 
         //Remove this
+
         BasicPluginObject testBasicPluginObject = (BasicPluginObject)
-                mBasicProcessorCommunicator.process("test", mCacheServiceCaller);
+                mBasicProcessorCommunicator.pipeline("test");
         String testresult = testBasicPluginObject.getResult();
         mTextView.setText(testresult);
 
@@ -51,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
             if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TEXT)) {
                 String inputText = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TEXT);
                 basicPluginObject = (BasicPluginObject)
-                        mBasicProcessorCommunicator.process(inputText, mCacheServiceCaller);
+                        mBasicProcessorCommunicator.pipeline(inputText);
             }
 
             // Handle ExtractedText object (received when first opening a new file)
@@ -60,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
                         intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT);
                 ExtractedText inputText = ExtractedText.fromJson(inputTextJSON);
                 basicPluginObject = (BasicPluginObject)
-                        mBasicProcessorCommunicator.process(inputText, mCacheServiceCaller);
+                        mBasicProcessorCommunicator.pipeline(inputText);
             }
 
             // TODO handle a BasicPluginObject that was cached (will come in Json format)
@@ -77,8 +78,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void onDestroy(){
-        mCacheServiceCaller.unbindService();
-
+        //mCacheServiceCaller.unbindService();
         super.onDestroy();
     }
 }
