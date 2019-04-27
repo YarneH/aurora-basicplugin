@@ -37,9 +37,9 @@ public class MainActivity extends AppCompatActivity {
         //Remove this
 
         BasicPluginObject testBasicPluginObject = (BasicPluginObject)
-                mBasicProcessorCommunicator.pipeline("test");
-        String testresult = testBasicPluginObject.getResult();
-        mTextView.setText(testresult);
+                mBasicProcessorCommunicator.pipeline("dummyfilename", "test");
+        String testResult = testBasicPluginObject.getResult();
+        mTextView.setText(testResult);
 
         // Handle the data that came with the intent that opened BasicPlugin
         Intent intentThatStartedThisActivity = getIntent();
@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
             if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TEXT)) {
                 String inputText = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TEXT);
                 basicPluginObject = (BasicPluginObject)
-                        mBasicProcessorCommunicator.pipeline(inputText);
+                        mBasicProcessorCommunicator.pipeline("dummyFileName", inputText);
             }
 
             // Handle ExtractedText object (received when first opening a new file)

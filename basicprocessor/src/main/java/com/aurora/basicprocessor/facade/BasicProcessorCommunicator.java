@@ -5,14 +5,16 @@ import android.content.Context;
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.PluginObject;
 import com.aurora.auroralib.ProcessorCommunicator;
+import com.aurora.basicprocessor.PluginConstants;
 import com.aurora.basicprocessor.basicpluginobject.BasicPluginObject;
 
 /**
  * Communicator interface to the BasicProcessor
  */
 public class BasicProcessorCommunicator extends ProcessorCommunicator {
-    public BasicProcessorCommunicator(Context context){
-        super(context);
+
+    public BasicProcessorCommunicator(Context context) {
+        super(PluginConstants.UNIQUE_PLUGIN_NAME, context);
     }
 
     /**
@@ -23,7 +25,7 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
      */
     @Override
     protected PluginObject process(ExtractedText extractedText) {
-        BasicPluginObject res = new BasicPluginObject();
+        BasicPluginObject res = new BasicPluginObject(extractedText.getFilename());
         res.setResult("Basic Plugin processed and cached with result:" + "\n" + extractedText.toString());
         return res;
     }
@@ -32,15 +34,17 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
     // or include this as an abstract method maybe
     // Maybe also include it as an abstract method in the superclass  then because then it should
     // also always be implemented
+
     /**
      * Very simple process function that just adds some text to a String
      *
+     * @param fileName  the name of the file that contained the original text
      * @param inputText The string that has to be processed
      * @return A string that consists of standard text and the inputText
      */
     @Override
-    protected PluginObject process(String inputText) {
-        BasicPluginObject res = new BasicPluginObject();
+    protected PluginObject process(String fileName, String inputText) {
+        BasicPluginObject res = new BasicPluginObject(fileName);
         res.setResult("Basic Plugin processed:\n" + inputText);
         return res;
     }
