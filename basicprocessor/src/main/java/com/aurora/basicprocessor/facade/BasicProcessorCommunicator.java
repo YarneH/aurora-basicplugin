@@ -1,8 +1,6 @@
 package com.aurora.basicprocessor.facade;
 
-/**
- * Communicator interface to the BasicProcessor
- */
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -27,24 +25,36 @@ import edu.stanford.nlp.pipeline.CoreNLPProtos;
 import edu.stanford.nlp.pipeline.ProtobufAnnotationSerializer;
 import edu.stanford.nlp.util.CoreMap;
 
+/**
+ * Communicator interface to the BasicProcessor
+ */
 public class BasicProcessorCommunicator extends ProcessorCommunicator {
 
     public BasicProcessorCommunicator(Context context) {
+        /*
+         * A UNIQUE_PLUGIN_NAME needs to be passed to the constructor of ProcessorCommunicator for
+         * proper configuration of the cache
+         */
         super(PluginConstants.UNIQUE_PLUGIN_NAME, context);
     }
 
     /**
-     * Very simple process function that just adds some text to extractedText //TODO
+     * Very simple process function that just adds some text to extractedText. It also logs whether
+     * or not NLP tokens are present
      *
      * @param extractedText The text that was extracted after Aurora's internal processing
-     * @return A string that consists of standard text and the result of extractedText.toString()
+     * @return A BasicPluginObject that consists of standard text and the result of
+     * extractedText.toString(). It also contains Images if these were present.
      */
     @Override
     protected PluginObject process(ExtractedText extractedText) {
         // TODO: use extractedText.getFilename()
         BasicPluginObject res = new BasicPluginObject("dummyfilename");
+
+        // Get the text
         res.setResult("Basic Plugin processed:\n" + extractedText.toString());
 
+        // Get the images
         for (Section section: extractedText.getSections()) {
             if(section.getImages() != null && !section.getImages().isEmpty()) {
                 for (String image: section.getImages()) {
@@ -61,6 +71,7 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
             }
         }
 
+        // Log whether there are NLP tags
         if(extractedText.getTitleAnnotation() != null) {
             List<CoreMap> sentences = extractedText.getTitleAnnotation().get(CoreAnnotations.SentencesAnnotation.class);
 
@@ -74,28 +85,5 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
         }
         return res;
     }
-
-    // TODO depending on whether we will also allow regular Strings to be passed: either remove this
-    // or include this as an abstract method maybe
-    // Maybe also include it as an abstract method in the superclass  then because then it should
-    // also always be implemented
-
-
-    /**
-     * Very simple process function that just adds some text to a String
-     *
-     * @param fileName  the name of the file that contained the original text
-     * @param inputText The string that has to be processed
-     * @return A string that consists of standard text and the inputText
-     */
-    /*
-    @Override
-    protected PluginObject process(String fileName, String inputText) {
-        BasicPluginObject res = new BasicPluginObject(fileName);
-        res.setResult("Basic Plugin processed:\n" + inputText);
-        return res;
-    }
-
-    */
 
 }

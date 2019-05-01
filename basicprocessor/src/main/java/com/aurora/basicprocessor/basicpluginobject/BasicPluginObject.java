@@ -10,14 +10,18 @@ import java.util.List;
 import static com.aurora.basicprocessor.PluginConstants.UNIQUE_PLUGIN_NAME;
 
 /**
- * A concrete PluginObject that only has a String, which is to be shown in the environment
+ * A concrete PluginObject that only has a String and possibly a list of Images,
+ * which are to be shown in the environment
  */
 public class BasicPluginObject extends PluginObject {
-
     /**
      * The resulting text to be displayed by BasicPlugin
      */
     private String mResult;
+
+    /**
+     * The possibly empty list of images from the file that is opened
+     */
     private List<Bitmap> mImages = new ArrayList<>();
 
     public BasicPluginObject(String fileName) {

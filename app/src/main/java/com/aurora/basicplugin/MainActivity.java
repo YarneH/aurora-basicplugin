@@ -48,7 +48,9 @@ public class MainActivity extends AppCompatActivity {
         mTextView = findViewById(R.id.textView);
         mTextView.setMovementMethod(new ScrollingMovementMethod());
 
-        //mCacheServiceCaller.bindService();
+        /*
+         * Initialize the communicator
+         */
         mBasicProcessorCommunicator = new BasicProcessorCommunicator(getApplicationContext());
 
         //Remove this
@@ -64,16 +66,6 @@ public class MainActivity extends AppCompatActivity {
         if (intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
 
             BasicPluginObject basicPluginObject = null;
-
-            // TODO remove this if statement maybe. Is currently used to handle cases where a plain
-            // String is sent instead of an ExtractedText
-            /*
-            if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TEXT)) {
-                String inputText = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TEXT);
-                basicPluginObject = (BasicPluginObject)
-                        mBasicProcessorCommunicator.pipeline("dummyFileName", inputText);
-            }
-            */
 
             // Handle ExtractedText object (received when first opening a new file)
             if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
@@ -128,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(getClass().getCanonicalName(), basicPluginObject.getResult());
             }
 
+            // Represent
             // Show the processed text
             if (basicPluginObject != null){
                 String filename = basicPluginObject.getFileName();
