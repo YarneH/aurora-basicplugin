@@ -8,7 +8,7 @@ public class BasicPluginObjectTest {
     public void BasicPluginObject_Gson(){
         // Arrange
         // Create a BasicPluginObject
-        BasicPluginObject originalBasicPluginObject = new BasicPluginObject();
+        BasicPluginObject originalBasicPluginObject = new BasicPluginObject("Title");
         originalBasicPluginObject.setResult("Test");
 
         // Act
