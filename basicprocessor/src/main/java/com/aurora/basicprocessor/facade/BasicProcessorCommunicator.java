@@ -1,5 +1,9 @@
 package com.aurora.basicprocessor.facade;
 
+/**
+ * Communicator interface to the BasicProcessor
+ */
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
@@ -8,7 +12,8 @@ import android.util.Log;
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.PluginObject;
 import com.aurora.auroralib.Section;
-import com.aurora.basicprocessor.ProcessorCommunicator;
+import com.aurora.auroralib.ProcessorCommunicator;
+import com.aurora.basicprocessor.PluginConstants;
 import com.aurora.basicprocessor.basicpluginobject.BasicPluginObject;
 
 import java.io.ByteArrayInputStream;
@@ -24,7 +29,9 @@ import edu.stanford.nlp.util.CoreMap;
 
 public class BasicProcessorCommunicator extends ProcessorCommunicator {
 
-    public BasicProcessorCommunicator(){}
+    public BasicProcessorCommunicator(Context context) {
+        super(PluginConstants.UNIQUE_PLUGIN_NAME, context);
+    }
 
     /**
      * Very simple process function that just adds some text to extractedText //TODO
@@ -33,8 +40,9 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
      * @return A string that consists of standard text and the result of extractedText.toString()
      */
     @Override
-    public PluginObject process(ExtractedText extractedText) {
-        BasicPluginObject res = new BasicPluginObject();
+    protected PluginObject process(ExtractedText extractedText) {
+        // TODO: use extractedText.getFilename()
+        BasicPluginObject res = new BasicPluginObject("dummyfilename");
         res.setResult("Basic Plugin processed:\n" + extractedText.toString());
 
         for (Section section: extractedText.getSections()) {
@@ -64,7 +72,6 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
                 }
             }
         }
-
         return res;
     }
 
@@ -72,15 +79,23 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
     // or include this as an abstract method maybe
     // Maybe also include it as an abstract method in the superclass  then because then it should
     // also always be implemented
+
+
     /**
      * Very simple process function that just adds some text to a String
      *
+     * @param fileName  the name of the file that contained the original text
      * @param inputText The string that has to be processed
      * @return A string that consists of standard text and the inputText
      */
-    public PluginObject process(String inputText) {
-        BasicPluginObject res = new BasicPluginObject();
+    /*
+    @Override
+    protected PluginObject process(String fileName, String inputText) {
+        BasicPluginObject res = new BasicPluginObject(fileName);
         res.setResult("Basic Plugin processed:\n" + inputText);
         return res;
     }
+
+    */
+
 }
