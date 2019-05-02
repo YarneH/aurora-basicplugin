@@ -1,9 +1,11 @@
 package com.aurora.basicplugin;
 
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.ParcelFileDescriptor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -28,11 +30,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
     /**
      *  Textview for showing the processed text
      */
@@ -56,33 +59,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 List<String> inputSentences;
-                //inputSentences = Arrays.asList(mBasicPluginObject.getResult().split("."));
-                inputSentences = new ArrayList<>();
-                inputSentences.add(mBasicPluginObject.getResult());
+                inputSentences = Arrays.asList(mBasicPluginObject.getResult().split("\n"));
+                //inputSentences = new ArrayList<>();
+                //inputSentences.add(mBasicPluginObject.getResult());
 
-                ProcessorTranslationThread processorTranslationThread = new ProcessorTranslationThread(
-                      inputSentences, "en", "nl", mTranslationServiceCaller);
-                processorTranslationThread.start();
-                /*
-                try {
-                    processorTranslationThread.join();
-                } catch (InterruptedException e) {
-                    Log.e(getClass().getSimpleName(), "Exception during translation join", e);
-
-                    // Restore the interrupted state:
-                    // https://www.ibm.com/developerworks/java/library/j-jtp05236/index.html?ca=drs-#2.1
-                    Thread.currentThread().interrupt();
-                }
-                List<String> translatedSentences = processorTranslationThread.getTranslatedSentences();
-
-                StringBuilder sb = new StringBuilder();
-                for (String s : translatedSentences)
-                {
-                    sb.append(s);
-                    sb.append(".");
-                }
-                mTextView.setText(sb.toString());
-                */
+                new TranslationTask(inputSentences, "en", "nl",
+                        mTranslationServiceCaller, v).execute();
 
             }
         });
@@ -147,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
     //TODO: make this a fuunction of ExtractedText in auroralib
     private ExtractedText getExtractedTextFromFile(Uri fileUri){
         StringBuilder total = new StringBuilder();
@@ -199,5 +182,46 @@ public class MainActivity extends AppCompatActivity {
         imageView.setLayoutParams(lp);
         imageView.setImageBitmap(image);
         return imageView;
+    }
+
+    // TODO: Move abstract version to auroralib instead of ProcessorTranslationThread and make
+    //  onPostExecute abstract
+    static public class TranslationTask extends AsyncTask<Void, Void, List<String>> {
+        private List<String> mSentences;
+        private String mSourceLanguage;
+        private String mDestinationLanguage;
+        private TranslationServiceCaller mTranslationServiceCaller;
+        private TextView mTextView;
+        //private WeakReference<Activity> mActivityWeakReference;
+
+
+        TranslationTask(List<String> sentences, String sourceLanguage, String destinationLanguage,
+                        TranslationServiceCaller translationServiceCaller, View v){
+            this.mSentences = sentences;
+            this.mSourceLanguage = sourceLanguage;
+            this.mDestinationLanguage = destinationLanguage;
+            this.mTranslationServiceCaller = translationServiceCaller;
+            this.mTextView = (TextView) v;
+            //this.mActivityWeakReference = new WeakReference<Activity>(activity);
+        }
+
+
+        @Override protected List<String> doInBackground(Void... params) {
+            List<String> result = mTranslationServiceCaller.translateOperation(mSentences,
+                    mSourceLanguage, mDestinationLanguage);
+            Log.d(getClass().getSimpleName(), result.toString());
+            return result;
+        }
+
+        @Override protected void onPostExecute(List<String> translatedSentences) {
+            Log.d(getClass().getSimpleName(), translatedSentences.toString());
+            StringBuilder sb = new StringBuilder();
+            for (String s : translatedSentences)
+            {
+                sb.append(s);
+                sb.append("\n");
+            }
+            mTextView.setText(sb.toString());
+        }
     }
 }
