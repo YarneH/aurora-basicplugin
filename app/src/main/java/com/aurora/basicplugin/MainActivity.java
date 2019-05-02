@@ -14,9 +14,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.aurora.auroralib.CacheServiceCaller;
 import com.aurora.auroralib.Constants;
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.auroralib.translation.ProcessorTranslationThread;
+import com.aurora.auroralib.translation.TranslationServiceCaller;
 import com.aurora.basicprocessor.basicpluginobject.BasicPluginObject;
 import com.aurora.basicprocessor.facade.BasicProcessorCommunicator;
 
@@ -27,6 +28,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     /**
@@ -39,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
      * Communicator that acts as an interface to the BasicPlugin's processor
      */
     private BasicProcessorCommunicator mBasicProcessorCommunicator;
+    private TranslationServiceCaller mTranslationServiceCaller;
+    private BasicPluginObject mBasicPluginObject;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,12 +52,48 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mTextView = findViewById(R.id.textView);
+        mTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                List<String> inputSentences;
+                //inputSentences = Arrays.asList(mBasicPluginObject.getResult().split("."));
+                inputSentences = new ArrayList<>();
+                inputSentences.add(mBasicPluginObject.getResult());
+
+                ProcessorTranslationThread processorTranslationThread = new ProcessorTranslationThread(
+                      inputSentences, "en", "nl", mTranslationServiceCaller);
+                processorTranslationThread.start();
+                /*
+                try {
+                    processorTranslationThread.join();
+                } catch (InterruptedException e) {
+                    Log.e(getClass().getSimpleName(), "Exception during translation join", e);
+
+                    // Restore the interrupted state:
+                    // https://www.ibm.com/developerworks/java/library/j-jtp05236/index.html?ca=drs-#2.1
+                    Thread.currentThread().interrupt();
+                }
+                List<String> translatedSentences = processorTranslationThread.getTranslatedSentences();
+
+                StringBuilder sb = new StringBuilder();
+                for (String s : translatedSentences)
+                {
+                    sb.append(s);
+                    sb.append(".");
+                }
+                mTextView.setText(sb.toString());
+                */
+
+            }
+        });
+
         mTextView.setMovementMethod(new ScrollingMovementMethod());
 
         /*
          * Initialize the communicator
          */
         mBasicProcessorCommunicator = new BasicProcessorCommunicator(getApplicationContext());
+        mTranslationServiceCaller = new TranslationServiceCaller(getApplicationContext());
 
         //Remove this
         /*
@@ -60,13 +102,12 @@ public class MainActivity extends AppCompatActivity {
         String testResult = testBasicPluginObject.getResult();
         mTextView.setText(testResult);
         */
+        mBasicPluginObject = new BasicPluginObject("");
+        mBasicPluginObject.setResult(mTextView.getText().toString());
 
         // Handle the data that came with the intent that opened BasicPlugin
         Intent intentThatStartedThisActivity = getIntent();
         if (intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
-
-            BasicPluginObject basicPluginObject = null;
-
             // Handle ExtractedText object (received when first opening a new file)
             if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
                 // Get the Uri to the transferred file
@@ -75,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Convert the read file to an ExtractedText object
                 ExtractedText inputText = getExtractedTextFromFile(fileUri);
-                basicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
+                mBasicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
             }
 
             // TODO handle a BasicPluginObject that was cached (will come in Json format)
@@ -83,22 +124,22 @@ public class MainActivity extends AppCompatActivity {
                 String basicPluginObjectJson =
                         intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_OBJECT);
                 Log.d(getClass().getCanonicalName(), basicPluginObjectJson);
-                basicPluginObject = (BasicPluginObject)
+                mBasicPluginObject = (BasicPluginObject)
                         BasicPluginObject.fromJson(basicPluginObjectJson, BasicPluginObject.class);
-                Log.d(getClass().getCanonicalName(), basicPluginObject.getFileName());
-                Log.d(getClass().getCanonicalName(), basicPluginObject.getResult());
+                Log.d(getClass().getCanonicalName(), mBasicPluginObject.getFileName());
+                Log.d(getClass().getCanonicalName(), mBasicPluginObject.getResult());
             }
 
             // Represent
             // Show the processed text
-            if (basicPluginObject != null){
-                String filename = basicPluginObject.getFileName();
-                String result = basicPluginObject.getResult();
+            if (mBasicPluginObject != null){
+                String filename = mBasicPluginObject.getFileName();
+                String result = mBasicPluginObject.getResult();
                 mTextView.setText(filename + '\n' + result);
 
-                if(!basicPluginObject.getImages().isEmpty()) {
+                if(!mBasicPluginObject.getImages().isEmpty()) {
                     LinearLayout imageGallery = findViewById(R.id.imageGallery);
-                    for (Bitmap image : basicPluginObject.getImages()) {
+                    for (Bitmap image : mBasicPluginObject.getImages()) {
                         imageGallery.addView(getImageView(image));
                     }
                 }
@@ -149,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
         //mCacheServiceCaller.unbindService();
         super.onDestroy();
     }
+
 
     private View getImageView(Bitmap image) {
         ImageView imageView = new ImageView(getApplicationContext());
