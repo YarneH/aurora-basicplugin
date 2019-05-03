@@ -4,29 +4,22 @@ package com.aurora.basicplugin;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.ParcelFileDescriptor;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.aurora.auroralib.CacheServiceCaller;
 import com.aurora.auroralib.Constants;
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.basicprocessor.basicpluginobject.BasicPluginObject;
 import com.aurora.basicprocessor.facade.BasicProcessorCommunicator;
 
-import java.io.BufferedReader;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 
 public class MainActivity extends AppCompatActivity {
     /**
@@ -53,96 +46,80 @@ public class MainActivity extends AppCompatActivity {
          */
         mBasicProcessorCommunicator = new BasicProcessorCommunicator(getApplicationContext());
 
-        //Remove this
-        /*
-        BasicPluginObject testBasicPluginObject = (BasicPluginObject)
-                mBasicProcessorCommunicator.pipeline("dummyfilename", "test");
-        String testResult = testBasicPluginObject.getResult();
-        mTextView.setText(testResult);
-        */
-
         // Handle the data that came with the intent that opened BasicPlugin
         Intent intentThatStartedThisActivity = getIntent();
-        if (intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
 
-            BasicPluginObject basicPluginObject = null;
+        if(intentThatStartedThisActivity.getAction() == null) {
+            Toast.makeText(this, "ERROR: The intent had no action.", Snackbar.LENGTH_LONG).show();
+            return;
+        } else if(!intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
+            Toast.makeText(this, "ERROR: The intent had incorrect action.", Snackbar.LENGTH_LONG).show();
+            return;
+        } else if(!intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TYPE)) {
+            Toast.makeText(this, "ERROR: The intent had no specified input type.",
+                    Snackbar.LENGTH_LONG).show();
+            return;
+        }
 
-            // Handle ExtractedText object (received when first opening a new file)
-            if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
-                // Get the Uri to the transferred file
-                Uri fileUri = intentThatStartedThisActivity.getData();
+        BasicPluginObject basicPluginObject;
 
+        // Get the input type
+        String inputType = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TYPE);
 
+        // Get the Uri to the transferred file
+        Uri fileUri = intentThatStartedThisActivity.getData();
+        if(fileUri == null) {
+            Toast.makeText(this, "ERROR: The intent had no url in the data field",
+                    Snackbar.LENGTH_LONG).show();
+            return;
+        }
+
+        // Switch on the different kinds of input types that could be in the temp file
+        switch (inputType) {
+
+            case Constants.PLUGIN_INPUT_TYPE_EXTRACTED_TEXT:
                 // Convert the read file to an ExtractedText object
-                ExtractedText inputText = getExtractedTextFromFile(fileUri);
-                basicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
-            }
-
-            // TODO handle a BasicPluginObject that was cached (will come in Json format)
-            else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)){
-                String basicPluginObjectJson =
-                        intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_OBJECT);
-                Log.d(getClass().getCanonicalName(), basicPluginObjectJson);
-                basicPluginObject = (BasicPluginObject)
-                        BasicPluginObject.fromJson(basicPluginObjectJson, BasicPluginObject.class);
-                Log.d(getClass().getCanonicalName(), basicPluginObject.getFileName());
-                Log.d(getClass().getCanonicalName(), basicPluginObject.getResult());
-            }
-
-            // Represent
-            // Show the processed text
-            if (basicPluginObject != null){
-                String filename = basicPluginObject.getFileName();
-                String result = basicPluginObject.getResult();
-                mTextView.setText(filename + '\n' + result);
-
-                if(!basicPluginObject.getImages().isEmpty()) {
-                    LinearLayout imageGallery = findViewById(R.id.imageGallery);
-                    for (Bitmap image : basicPluginObject.getImages()) {
-                        imageGallery.addView(getImageView(image));
-                    }
-                }
-            }
-        }
-    }
-
-    //TODO: make this a fuunction of ExtractedText in auroralib
-    private ExtractedText getExtractedTextFromFile(Uri fileUri){
-        StringBuilder total = new StringBuilder();
-        ParcelFileDescriptor inputPFD = null;
-        if(fileUri != null) {
-            // Open the file
-            try {
-                inputPFD = getContentResolver().openFileDescriptor(fileUri, "r");
-            } catch (FileNotFoundException e) {
-                Log.e("MAIN", "There was a problem receiving the file from " +
-                        "the plugin", e);
-            }
-
-            // Read the file
-            if (inputPFD != null) {
-                InputStream fileStream = new FileInputStream(inputPFD.getFileDescriptor());
-
-
-                try (BufferedReader r = new BufferedReader(new InputStreamReader(fileStream))) {
-                    for (String line; (line = r.readLine()) != null; ) {
-                        total.append(line).append('\n');
-                    }
+                try {
+                    ExtractedText inputText = ExtractedText.getExtractedTextFromFile( fileUri,
+                            this);
+                    basicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
                 } catch (IOException e) {
-                    Log.e("MAIN", "There was a problem receiving the file from " +
-                            "the plugin", e);
+                    e.printStackTrace();
+                    return;
                 }
-            } else {
-                Log.e("MAIN", "There was a problem receiving the file from " +
-                        "the plugin");
-            }
-        } else {
-            Log.e("MAIN", "There was a problem receiving the file from " +
-                    "the plugin");
+                break;
+
+            case Constants.PLUGIN_INPUT_TYPE_OBJECT:
+                // Convert the read file to an PluginObject
+                try {
+                    basicPluginObject = BasicPluginObject.getPluginObjectFromFile(fileUri, this,
+                            BasicPluginObject.class);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return;
+                }
+                break;
+
+
+            default:
+                Toast.makeText(this, "ERROR: The intent had an unsupported input type.",
+                        Snackbar.LENGTH_LONG).show();
+                return;
         }
 
-        // Convert the read file to an ExtractedText object
-        return ExtractedText.fromJson(total.toString());
+        // Show the processed text
+        if (basicPluginObject != null){
+            String filename = basicPluginObject.getFileName();
+            String result = basicPluginObject.getResult();
+            mTextView.setText(filename + '\n' + result);
+
+            if(!basicPluginObject.getImages().isEmpty()) {
+                LinearLayout imageGallery = findViewById(R.id.imageGallery);
+                for (Bitmap image : basicPluginObject.getImages()) {
+                    imageGallery.addView(getImageView(image));
+                }
+            }
+        }
     }
 
     protected void onDestroy() {
