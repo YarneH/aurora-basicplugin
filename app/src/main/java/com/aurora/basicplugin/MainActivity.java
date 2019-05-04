@@ -4,10 +4,12 @@ package com.aurora.basicplugin;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -16,10 +18,13 @@ import android.widget.Toast;
 
 import com.aurora.auroralib.Constants;
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.auroralib.translation.TranslationServiceCaller;
 import com.aurora.basicprocessor.basicpluginobject.BasicPluginObject;
 import com.aurora.basicprocessor.facade.BasicProcessorCommunicator;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     /**
@@ -32,6 +37,14 @@ public class MainActivity extends AppCompatActivity {
      * Communicator that acts as an interface to the BasicPlugin's processor
      */
     private BasicProcessorCommunicator mBasicProcessorCommunicator;
+    /**
+     * ServiceCaller for using Aurora's translatipon service
+     */
+    private TranslationServiceCaller mTranslationServiceCaller;
+    /**
+     * The BasicPluginObject that is being represented
+     */
+    private BasicPluginObject mBasicPluginObject;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,12 +52,41 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mTextView = findViewById(R.id.textView);
+        /*
+         * This OnClickListener calls The translationTask which is defined lower.
+         */
+        mTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                List<String> inputSentences;
+                inputSentences = Arrays.asList(mBasicPluginObject.getResult().split("\n"));
+
+                new TranslationTask(inputSentences, "en", "nl",
+                        mTranslationServiceCaller, v).execute();
+
+            }
+        });
+
         mTextView.setMovementMethod(new ScrollingMovementMethod());
 
         /*
          * Initialize the communicator
          */
         mBasicProcessorCommunicator = new BasicProcessorCommunicator(getApplicationContext());
+        /*
+         * Initialize the TranslationServiceCaller
+         */
+        mTranslationServiceCaller = new TranslationServiceCaller(getApplicationContext());
+
+        //Remove this (Is now used for testing sometimes)
+        /*
+        BasicPluginObject testBasicPluginObject = (BasicPluginObject)
+                mBasicProcessorCommunicator.pipeline("dummyfilename", "test");
+        String testResult = testBasicPluginObject.getResult();
+        mTextView.setText(testResult);
+        */
+        mBasicPluginObject = new BasicPluginObject("");
+        mBasicPluginObject.setResult(mTextView.getText().toString());
 
         // Handle the data that came with the intent that opened BasicPlugin
         Intent intentThatStartedThisActivity = getIntent();
@@ -60,8 +102,6 @@ public class MainActivity extends AppCompatActivity {
                     Snackbar.LENGTH_LONG).show();
             return;
         }
-
-        BasicPluginObject basicPluginObject;
 
         // Get the input type
         String inputType = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TYPE);
@@ -82,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     ExtractedText inputText = ExtractedText.getExtractedTextFromFile( fileUri,
                             this);
-                    basicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
+                    mBasicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
                 } catch (IOException e) {
                     e.printStackTrace();
                     return;
@@ -92,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
             case Constants.PLUGIN_INPUT_TYPE_OBJECT:
                 // Convert the read file to an PluginObject
                 try {
-                    basicPluginObject = BasicPluginObject.getPluginObjectFromFile(fileUri, this,
+                    mBasicPluginObject = BasicPluginObject.getPluginObjectFromFile(fileUri, this,
                             BasicPluginObject.class);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -108,14 +148,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Show the processed text
-        if (basicPluginObject != null){
-            String filename = basicPluginObject.getFileName();
-            String result = basicPluginObject.getResult();
+        if (mBasicPluginObject != null){
+            String filename = mBasicPluginObject.getFileName();
+            String result = mBasicPluginObject.getResult();
             mTextView.setText(filename + '\n' + result);
 
-            if(!basicPluginObject.getImages().isEmpty()) {
+            if(!mBasicPluginObject.getImages().isEmpty()) {
                 LinearLayout imageGallery = findViewById(R.id.imageGallery);
-                for (Bitmap image : basicPluginObject.getImages()) {
+                for (Bitmap image : mBasicPluginObject.getImages()) {
                     imageGallery.addView(getImageView(image));
                 }
             }
@@ -123,7 +163,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void onDestroy() {
-        //mCacheServiceCaller.unbindService();
         super.onDestroy();
     }
 
@@ -134,5 +173,54 @@ public class MainActivity extends AppCompatActivity {
         imageView.setLayoutParams(lp);
         imageView.setImageBitmap(image);
         return imageView;
+    }
+
+    /**
+     * Asynctask to perform translation operation.
+     * You should only adapt the onPostExecute method to your liking.
+     *
+     * For now it is good that this is not part of auroralib, since the TranslationTask here also
+     * receives a View as an input (the view that is to be updated), but you might want to change
+     * this to your liking for your plugin.
+     */
+    // TODO: Maybe move abstract version to auroralib instead of ProcessorTranslationThread and make
+    //  onPostExecute abstract
+    static public class TranslationTask extends AsyncTask<Void, Void, List<String>> {
+        private List<String> mSentences;
+        private String mSourceLanguage;
+        private String mDestinationLanguage;
+        private TranslationServiceCaller mTranslationServiceCaller;
+        private TextView mTextView;
+        //private WeakReference<Activity> mActivityWeakReference;
+
+
+        TranslationTask(List<String> sentences, String sourceLanguage, String destinationLanguage,
+                        TranslationServiceCaller translationServiceCaller, View v){
+            this.mSentences = sentences;
+            this.mSourceLanguage = sourceLanguage;
+            this.mDestinationLanguage = destinationLanguage;
+            this.mTranslationServiceCaller = translationServiceCaller;
+            this.mTextView = (TextView) v;
+            //this.mActivityWeakReference = new WeakReference<Activity>(activity);
+        }
+
+
+        @Override protected List<String> doInBackground(Void... params) {
+            List<String> result = mTranslationServiceCaller.translateOperation(mSentences,
+                    mSourceLanguage, mDestinationLanguage);
+            Log.d(getClass().getSimpleName(), result.toString());
+            return result;
+        }
+
+        @Override protected void onPostExecute(List<String> translatedSentences) {
+            Log.d(getClass().getSimpleName(), translatedSentences.toString());
+            StringBuilder sb = new StringBuilder();
+            for (String s : translatedSentences)
+            {
+                sb.append(s);
+                sb.append("\n");
+            }
+            mTextView.setText(sb.toString());
+        }
     }
 }
