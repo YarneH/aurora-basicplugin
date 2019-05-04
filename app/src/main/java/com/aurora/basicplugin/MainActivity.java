@@ -1,41 +1,32 @@
 package com.aurora.basicplugin;
 
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.ParcelFileDescriptor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.aurora.auroralib.Constants;
 import com.aurora.auroralib.ExtractedText;
-import com.aurora.auroralib.translation.ProcessorTranslationThread;
 import com.aurora.auroralib.translation.TranslationServiceCaller;
 import com.aurora.basicprocessor.basicpluginobject.BasicPluginObject;
 import com.aurora.basicprocessor.facade.BasicProcessorCommunicator;
 
-import java.io.BufferedReader;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity {
     /**
      *  Textview for showing the processed text
      */
@@ -46,7 +37,13 @@ public class MainActivity extends AppCompatActivity{
      * Communicator that acts as an interface to the BasicPlugin's processor
      */
     private BasicProcessorCommunicator mBasicProcessorCommunicator;
+    /**
+     * ServiceCaller for using Aurora's translatipon service
+     */
     private TranslationServiceCaller mTranslationServiceCaller;
+    /**
+     * The BasicPluginObject that is being represented
+     */
     private BasicPluginObject mBasicPluginObject;
 
     @Override
@@ -55,13 +52,14 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
 
         mTextView = findViewById(R.id.textView);
+        /*
+         * This OnClickListener calls The translationTask which is defined lower.
+         */
         mTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 List<String> inputSentences;
                 inputSentences = Arrays.asList(mBasicPluginObject.getResult().split("\n"));
-                //inputSentences = new ArrayList<>();
-                //inputSentences.add(mBasicPluginObject.getResult());
 
                 new TranslationTask(inputSentences, "en", "nl",
                         mTranslationServiceCaller, v).execute();
@@ -75,9 +73,12 @@ public class MainActivity extends AppCompatActivity{
          * Initialize the communicator
          */
         mBasicProcessorCommunicator = new BasicProcessorCommunicator(getApplicationContext());
+        /*
+         * Initialize the TranslationServiceCaller
+         */
         mTranslationServiceCaller = new TranslationServiceCaller(getApplicationContext());
 
-        //Remove this
+        //Remove this (Is now used for testing sometimes)
         /*
         BasicPluginObject testBasicPluginObject = (BasicPluginObject)
                 mBasicProcessorCommunicator.pipeline("dummyfilename", "test");
@@ -89,91 +90,81 @@ public class MainActivity extends AppCompatActivity{
 
         // Handle the data that came with the intent that opened BasicPlugin
         Intent intentThatStartedThisActivity = getIntent();
-        if (intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
-            // Handle ExtractedText object (received when first opening a new file)
-            if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_EXTRACTED_TEXT)) {
-                // Get the Uri to the transferred file
-                Uri fileUri = intentThatStartedThisActivity.getData();
 
+        if(intentThatStartedThisActivity.getAction() == null) {
+            Toast.makeText(this, "ERROR: The intent had no action.", Snackbar.LENGTH_LONG).show();
+            return;
+        } else if(!intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
+            Toast.makeText(this, "ERROR: The intent had incorrect action.", Snackbar.LENGTH_LONG).show();
+            return;
+        } else if(!intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TYPE)) {
+            Toast.makeText(this, "ERROR: The intent had no specified input type.",
+                    Snackbar.LENGTH_LONG).show();
+            return;
+        }
 
+        // Get the input type
+        String inputType = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TYPE);
+
+        // Get the Uri to the transferred file
+        Uri fileUri = intentThatStartedThisActivity.getData();
+        if(fileUri == null) {
+            Toast.makeText(this, "ERROR: The intent had no url in the data field",
+                    Snackbar.LENGTH_LONG).show();
+            return;
+        }
+
+        // Switch on the different kinds of input types that could be in the temp file
+        switch (inputType) {
+
+            case Constants.PLUGIN_INPUT_TYPE_EXTRACTED_TEXT:
                 // Convert the read file to an ExtractedText object
-                ExtractedText inputText = getExtractedTextFromFile(fileUri);
-                mBasicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
-            }
-
-            // TODO handle a BasicPluginObject that was cached (will come in Json format)
-            else if (intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_OBJECT)){
-                String basicPluginObjectJson =
-                        intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_OBJECT);
-                Log.d(getClass().getCanonicalName(), basicPluginObjectJson);
-                mBasicPluginObject = (BasicPluginObject)
-                        BasicPluginObject.fromJson(basicPluginObjectJson, BasicPluginObject.class);
-                Log.d(getClass().getCanonicalName(), mBasicPluginObject.getFileName());
-                Log.d(getClass().getCanonicalName(), mBasicPluginObject.getResult());
-            }
-
-            // Represent
-            // Show the processed text
-            if (mBasicPluginObject != null){
-                String filename = mBasicPluginObject.getFileName();
-                String result = mBasicPluginObject.getResult();
-                mTextView.setText(filename + '\n' + result);
-
-                if(!mBasicPluginObject.getImages().isEmpty()) {
-                    LinearLayout imageGallery = findViewById(R.id.imageGallery);
-                    for (Bitmap image : mBasicPluginObject.getImages()) {
-                        imageGallery.addView(getImageView(image));
-                    }
-                }
-            }
-        }
-    }
-
-
-    //TODO: make this a fuunction of ExtractedText in auroralib
-    private ExtractedText getExtractedTextFromFile(Uri fileUri){
-        StringBuilder total = new StringBuilder();
-        ParcelFileDescriptor inputPFD = null;
-        if(fileUri != null) {
-            // Open the file
-            try {
-                inputPFD = getContentResolver().openFileDescriptor(fileUri, "r");
-            } catch (FileNotFoundException e) {
-                Log.e("MAIN", "There was a problem receiving the file from " +
-                        "the plugin", e);
-            }
-
-            // Read the file
-            if (inputPFD != null) {
-                InputStream fileStream = new FileInputStream(inputPFD.getFileDescriptor());
-
-
-                try (BufferedReader r = new BufferedReader(new InputStreamReader(fileStream))) {
-                    for (String line; (line = r.readLine()) != null; ) {
-                        total.append(line).append('\n');
-                    }
+                try {
+                    ExtractedText inputText = ExtractedText.getExtractedTextFromFile( fileUri,
+                            this);
+                    mBasicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
                 } catch (IOException e) {
-                    Log.e("MAIN", "There was a problem receiving the file from " +
-                            "the plugin", e);
+                    e.printStackTrace();
+                    return;
                 }
-            } else {
-                Log.e("MAIN", "There was a problem receiving the file from " +
-                        "the plugin");
-            }
-        } else {
-            Log.e("MAIN", "There was a problem receiving the file from " +
-                    "the plugin");
+                break;
+
+            case Constants.PLUGIN_INPUT_TYPE_OBJECT:
+                // Convert the read file to an PluginObject
+                try {
+                    mBasicPluginObject = BasicPluginObject.getPluginObjectFromFile(fileUri, this,
+                            BasicPluginObject.class);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return;
+                }
+                break;
+
+
+            default:
+                Toast.makeText(this, "ERROR: The intent had an unsupported input type.",
+                        Snackbar.LENGTH_LONG).show();
+                return;
         }
 
-        // Convert the read file to an ExtractedText object
-        return ExtractedText.fromJson(total.toString());
+        // Show the processed text
+        if (mBasicPluginObject != null){
+            String filename = mBasicPluginObject.getFileName();
+            String result = mBasicPluginObject.getResult();
+            mTextView.setText(filename + '\n' + result);
+
+            if(!mBasicPluginObject.getImages().isEmpty()) {
+                LinearLayout imageGallery = findViewById(R.id.imageGallery);
+                for (Bitmap image : mBasicPluginObject.getImages()) {
+                    imageGallery.addView(getImageView(image));
+                }
+            }
+        }
     }
 
     protected void onDestroy() {
-        //mCacheServiceCaller.unbindService();
         super.onDestroy();
     }
-
 
     private View getImageView(Bitmap image) {
         ImageView imageView = new ImageView(getApplicationContext());
@@ -184,7 +175,15 @@ public class MainActivity extends AppCompatActivity{
         return imageView;
     }
 
-    // TODO: Move abstract version to auroralib instead of ProcessorTranslationThread and make
+    /**
+     * Asynctask to perform translation operation.
+     * You should only adapt the onPostExecute method to your liking.
+     *
+     * For now it is good that this is not part of auroralib, since the TranslationTask here also
+     * receives a View as an input (the view that is to be updated), but you might want to change
+     * this to your liking for your plugin.
+     */
+    // TODO: Maybe move abstract version to auroralib instead of ProcessorTranslationThread and make
     //  onPostExecute abstract
     static public class TranslationTask extends AsyncTask<Void, Void, List<String>> {
         private List<String> mSentences;

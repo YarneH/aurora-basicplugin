@@ -4,7 +4,7 @@ package com.aurora.basicprocessor;
  * Important Constants for the plugin
  */
 public class PluginConstants {
-    
+
     /**
      * Prevent instantiation of utility class
      */
