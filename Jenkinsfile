@@ -62,7 +62,7 @@ pipeline {
                         sh """
                         ${scannerHome}/bin/sonar-scanner -X -Dproject.settings=sonar-project.properties -Dsonar.branch=${env.BRANCH_NAME} \
                         -Dapp.sonar.java.binaries=build/intermediates/javac/release/compileReleaseJavaWithJavac \
-                        -Dpaperviewerprocessor.sonar.java.binaries=build/intermediates/javac/release/compileReleaseJavaWithJavac
+                        -Dbasicprocessor.sonar.java.binaries=build/intermediates/javac/release/compileReleaseJavaWithJavac
                         """
                         }
                     } else {
@@ -70,7 +70,7 @@ pipeline {
                         sh """
                         ${scannerHome}/bin/sonar-scanner -X -Dproject.settings=sonar-project.properties -Dsonar.branch=${env.BRANCH_NAME} \
                         -Dapp.sonar.java.binaries=build/intermediates/javac/debug/compileDebugJavaWithJavac \
-                        -Dpaperviewerprocessor.sonar.java.binaries=build/intermediates/javac/debug/compileDebugJavaWithJavac
+                        -Dbasicprocessor.sonar.java.binaries=build/intermediates/javac/debug/compileDebugJavaWithJavac
                         """
                         }
                     }
