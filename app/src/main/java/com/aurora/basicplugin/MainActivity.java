@@ -55,15 +55,12 @@ public class MainActivity extends AppCompatActivity {
         /*
          * This OnClickListener calls The translationTask which is defined lower.
          */
-        mTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                List<String> inputSentences;
+        mTextView.setOnClickListener(v -> {
+            List<String> inputSentences;
+            if(mBasicPluginObject.getResult() != null) {
                 inputSentences = Arrays.asList(mBasicPluginObject.getResult().split("\n"));
-
                 new TranslationTask(inputSentences, "en", "nl",
                         mTranslationServiceCaller, v).execute();
-
             }
         });
 

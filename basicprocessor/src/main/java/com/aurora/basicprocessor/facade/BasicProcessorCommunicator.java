@@ -2,27 +2,19 @@ package com.aurora.basicprocessor.facade;
 
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.Base64;
 import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.auroralib.Image;
 import com.aurora.auroralib.PluginObject;
-import com.aurora.auroralib.Section;
 import com.aurora.auroralib.ProcessorCommunicator;
 import com.aurora.basicprocessor.PluginConstants;
 import com.aurora.basicprocessor.basicpluginobject.BasicPluginObject;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.List;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.CoreNLPProtos;
-import edu.stanford.nlp.pipeline.ProtobufAnnotationSerializer;
 import edu.stanford.nlp.util.CoreMap;
 
 /**
@@ -55,20 +47,9 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
         res.setResult("Basic Plugin processed:\n" + extractedText.toString());
 
         // Get the images
-        for (Section section: extractedText.getSections()) {
-            if(section.getImages() != null && !section.getImages().isEmpty()) {
-                for (String image: section.getImages()) {
-                    try{
-                        InputStream stream = new ByteArrayInputStream(Base64.decode(image.getBytes()
-                                , Base64.DEFAULT));
-                        Bitmap imageBitmap = BitmapFactory.decodeStream(stream);
-                        res.getImages().add(imageBitmap);
-                    }
-                    catch (Exception e) {
-                        Log.e("IMAGE_LOADER", "Failed to load or decode an image", e);
-                    }
-                }
-            }
+        List<Image> images = extractedText.getImages();
+        for(Image image: images) {
+            res.getImages().add(image.getImage());
         }
 
         // Log whether there are NLP tags
