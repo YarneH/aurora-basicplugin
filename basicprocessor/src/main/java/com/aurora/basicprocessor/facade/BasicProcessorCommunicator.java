@@ -5,7 +5,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
-import com.aurora.auroralib.Image;
+import com.aurora.auroralib.ExtractedImage;
 import com.aurora.auroralib.PluginObject;
 import com.aurora.auroralib.ProcessorCommunicator;
 import com.aurora.basicprocessor.PluginConstants;
@@ -47,9 +47,9 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
         res.setResult("Basic Plugin processed:\n" + extractedText.toString());
 
         // Get the images
-        List<Image> images = extractedText.getImages();
-        for(Image image: images) {
-            res.getImages().add(image.getImage());
+        List<ExtractedImage> images = extractedText.getImages();
+        for(ExtractedImage image: images) {
+            res.getImages().add(image.getBitmap());
         }
 
         // Log whether there are NLP tags
