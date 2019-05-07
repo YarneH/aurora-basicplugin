@@ -41,7 +41,7 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
     @Override
     protected PluginObject process(ExtractedText extractedText) {
         // TODO: use extractedText.getFilename()
-        BasicPluginObject res = new BasicPluginObject("dummyfilename");
+        BasicPluginObject res = new BasicPluginObject(extractedText.getFilename());
 
         // Get the text
         res.setResult("Basic Plugin processed:\n" + extractedText.toString());
