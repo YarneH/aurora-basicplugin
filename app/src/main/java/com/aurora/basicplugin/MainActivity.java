@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
             List<Bitmap> images = mBasicPluginObject.getImages();
             if(images != null && !images.isEmpty()) {
                 LinearLayout imageGallery = findViewById(R.id.imageGallery);
-                for (Bitmap image : mBasicPluginObject.getImages()) {
+                for (Bitmap image : images) {
                     imageGallery.addView(getImageView(image));
                 }
             }
