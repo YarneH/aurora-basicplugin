@@ -150,9 +150,10 @@ public class MainActivity extends AppCompatActivity {
             String result = mBasicPluginObject.getResult();
             mTextView.setText(filename + '\n' + result);
 
-            if(!mBasicPluginObject.getImages().isEmpty()) {
+            List<Bitmap> images = mBasicPluginObject.getImages();
+            if(images != null && !images.isEmpty()) {
                 LinearLayout imageGallery = findViewById(R.id.imageGallery);
-                for (Bitmap image : mBasicPluginObject.getImages()) {
+                for (Bitmap image : images) {
                     imageGallery.addView(getImageView(image));
                 }
             }
