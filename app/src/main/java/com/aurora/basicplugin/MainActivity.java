@@ -120,37 +120,23 @@ public class MainActivity extends AppCompatActivity {
 
         // Get the input type
         String inputType = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TYPE);
-        boolean failed = false;
+        boolean successful;
 
         // Switch on the different kinds of input types that could be in the temp file
         if (Constants.PLUGIN_INPUT_TYPE_EXTRACTED_TEXT.equals(inputType)) {
-            // Convert the read file to an ExtractedText object
-            try {
-                ExtractedText inputText = ExtractedText.getExtractedTextFromFile(fileUri,
-                        this);
-                mBasicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
-            } catch (IOException e) {
-                Log.e("MainActivity", "Something went wrong with getting the extracted text", e);
-                failed = true;
-            }
+            successful = processExtractedText(fileUri);
 
         } else if (Constants.PLUGIN_INPUT_TYPE_OBJECT.equals(inputType)) {
-            // Convert the read file to an PluginObject
-            try {
-                mBasicPluginObject = BasicPluginObject.getPluginObjectFromFile(fileUri, this,
-                        BasicPluginObject.class);
-            } catch (IOException e) {
-                Log.e("MainActivity", "Something went wrong with getting the pluggin object", e);
-                failed = true;
-            }
+            successful = processPluginObject(fileUri);
 
         } else {
             Toast.makeText(this, "ERROR: The intent had an unsupported input type.",
                     Snackbar.LENGTH_LONG).show();
-            failed = true;
+            successful = false;
         }
 
-        if (failed) {
+        // If extraction was not successful, return
+        if (!successful) {
             return;
         }
 
@@ -169,6 +155,42 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+    }
+
+    /**
+     * Processes the read file as a plugin object
+     * @param fileUri the uri of the file
+     * @return true if the processing was successful, false otherwise
+     */
+    private boolean processPluginObject(Uri fileUri) {
+        // Convert the read file to an PluginObject
+        try {
+            mBasicPluginObject = BasicPluginObject.getPluginObjectFromFile(fileUri, this,
+                    BasicPluginObject.class);
+        } catch (IOException e) {
+            Log.e("MainActivity", "Something went wrong with getting the pluggin object", e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Processes the read file a an extracted text object
+     * @param fileUri the uri of the file
+     * @return true if successful, false otherwise
+     */
+    private boolean processExtractedText(Uri fileUri) {
+        // Convert the read file to an ExtractedText object
+        try {
+            ExtractedText inputText = ExtractedText.getExtractedTextFromFile(fileUri,
+                    this);
+            mBasicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
+        } catch (IOException e) {
+            Log.e("MainActivity", "Something went wrong with getting the extracted text", e);
+            return false;
+        }
+
+        return true;
     }
 
     /**
