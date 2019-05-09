@@ -164,14 +164,15 @@ public class MainActivity extends AppCompatActivity {
      */
     private boolean processPluginObject(Uri fileUri) {
         // Convert the read file to an PluginObject
+        boolean success = true;
         try {
             mBasicPluginObject = BasicPluginObject.getPluginObjectFromFile(fileUri, this,
                     BasicPluginObject.class);
         } catch (IOException e) {
             Log.e("MainActivity", "Something went wrong with getting the pluggin object", e);
-            return false;
+            success = false;
         }
-        return true;
+        return success;
     }
 
     /**
@@ -181,16 +182,17 @@ public class MainActivity extends AppCompatActivity {
      */
     private boolean processExtractedText(Uri fileUri) {
         // Convert the read file to an ExtractedText object
+        boolean success = true;
         try {
             ExtractedText inputText = ExtractedText.getExtractedTextFromFile(fileUri,
                     this);
             mBasicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
         } catch (IOException e) {
             Log.e("MainActivity", "Something went wrong with getting the extracted text", e);
-            return false;
+            success = false;
         }
 
-        return true;
+        return success;
     }
 
     /**
