@@ -28,23 +28,28 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     /**
-     *  Textview for showing the processed text
+     * Constant for right margin
      */
-    private TextView mTextView;
+    private static final int RIGHT_MARGIN = 10;
+
+    /**
+     * Textview for showing the processed text
+     */
+    private TextView mTextView = null;
 
     // TODO: This should be singleton-like
     /**
      * Communicator that acts as an interface to the BasicPlugin's processor
      */
-    private BasicProcessorCommunicator mBasicProcessorCommunicator;
+    private BasicProcessorCommunicator mBasicProcessorCommunicator = null;
     /**
      * ServiceCaller for using Aurora's translatipon service
      */
-    private TranslationServiceCaller mTranslationServiceCaller;
+    private TranslationServiceCaller mTranslationServiceCaller = null;
     /**
      * The BasicPluginObject that is being represented
      */
-    private BasicPluginObject mBasicPluginObject;
+    private BasicPluginObject mBasicPluginObject = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
          */
         mTextView.setOnClickListener(v -> {
             List<String> inputSentences;
-            if(mBasicPluginObject.getResult() != null) {
+            if (mBasicPluginObject.getResult() != null) {
                 inputSentences = Arrays.asList(mBasicPluginObject.getResult().split("\n"));
                 new TranslationTask(inputSentences, "en", "nl",
                         mTranslationServiceCaller, v).execute();
@@ -88,86 +93,81 @@ public class MainActivity extends AppCompatActivity {
         // Handle the data that came with the intent that opened BasicPlugin
         Intent intentThatStartedThisActivity = getIntent();
 
-        if(intentThatStartedThisActivity.getAction() == null) {
+        if (intentThatStartedThisActivity.getAction() == null) {
             Toast.makeText(this, "ERROR: The intent had no action.", Snackbar.LENGTH_LONG).show();
-            return;
-        } else if(!intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
+        } else if (!intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
             Toast.makeText(this, "ERROR: The intent had incorrect action.", Snackbar.LENGTH_LONG).show();
-            return;
-        } else if(!intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TYPE)) {
+        } else if (!intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TYPE)) {
             Toast.makeText(this, "ERROR: The intent had no specified input type.",
                     Snackbar.LENGTH_LONG).show();
-            return;
-        }
+        } else {
 
-        // Get the input type
-        String inputType = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TYPE);
+            // Get the Uri to the transferred file
+            Uri fileUri = intentThatStartedThisActivity.getData();
+            if (fileUri == null) {
+                Toast.makeText(this, "ERROR: The intent had no url in the data field",
+                        Snackbar.LENGTH_LONG).show();
+                return;
+            }
 
-        // Get the Uri to the transferred file
-        Uri fileUri = intentThatStartedThisActivity.getData();
-        if(fileUri == null) {
-            Toast.makeText(this, "ERROR: The intent had no url in the data field",
-                    Snackbar.LENGTH_LONG).show();
-            return;
-        }
+            // Get the input type
+            String inputType = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TYPE);
+            boolean failed = false;
 
-        // Switch on the different kinds of input types that could be in the temp file
-        switch (inputType) {
-
-            case Constants.PLUGIN_INPUT_TYPE_EXTRACTED_TEXT:
+            // Switch on the different kinds of input types that could be in the temp file
+            if (Constants.PLUGIN_INPUT_TYPE_EXTRACTED_TEXT.equals(inputType)) {
                 // Convert the read file to an ExtractedText object
                 try {
-                    ExtractedText inputText = ExtractedText.getExtractedTextFromFile( fileUri,
+                    ExtractedText inputText = ExtractedText.getExtractedTextFromFile(fileUri,
                             this);
                     mBasicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
                 } catch (IOException e) {
-                    e.printStackTrace();
-                    return;
+                    Log.e("MainActivity", "Something went wrong with getting the extracted text", e);
+                    failed = true;
                 }
-                break;
 
-            case Constants.PLUGIN_INPUT_TYPE_OBJECT:
+            } else if (Constants.PLUGIN_INPUT_TYPE_OBJECT.equals(inputType)) {
                 // Convert the read file to an PluginObject
                 try {
                     mBasicPluginObject = BasicPluginObject.getPluginObjectFromFile(fileUri, this,
                             BasicPluginObject.class);
                 } catch (IOException e) {
-                    e.printStackTrace();
-                    return;
+                    Log.e("MainActivity", "Something went wrong with getting the pluggin object", e);
+                    failed = true;
                 }
-                break;
 
-
-            default:
+            } else {
                 Toast.makeText(this, "ERROR: The intent had an unsupported input type.",
                         Snackbar.LENGTH_LONG).show();
+                failed = true;
+            }
+
+            if (failed) {
                 return;
-        }
+            }
 
-        // Show the processed text
-        if (mBasicPluginObject != null){
-            String filename = mBasicPluginObject.getFileName();
-            String result = mBasicPluginObject.getResult();
-            mTextView.setText(filename + '\n' + result);
+            // Show the processed text
+            if (mBasicPluginObject != null) {
+                String filename = mBasicPluginObject.getFileName();
+                String result = mBasicPluginObject.getResult();
+                mTextView.setText(filename + '\n' + result);
 
-            List<Bitmap> images = mBasicPluginObject.getImages();
-            if(images != null && !images.isEmpty()) {
-                LinearLayout imageGallery = findViewById(R.id.imageGallery);
-                for (Bitmap image : images) {
-                    imageGallery.addView(getImageView(image));
+                List<Bitmap> images = mBasicPluginObject.getImages();
+                if (images != null && !images.isEmpty()) {
+                    LinearLayout imageGallery = findViewById(R.id.imageGallery);
+                    for (Bitmap image : images) {
+                        imageGallery.addView(getImageView(image));
+                    }
                 }
             }
         }
     }
 
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
     private View getImageView(Bitmap image) {
         ImageView imageView = new ImageView(getApplicationContext());
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        lp.setMargins(0, 0, 10, 0);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(0, 0, RIGHT_MARGIN, 0);
         imageView.setLayoutParams(lp);
         imageView.setImageBitmap(image);
         return imageView;
@@ -176,14 +176,14 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Asynctask to perform translation operation.
      * You should only adapt the onPostExecute method to your liking.
-     *
+     * <p>
      * For now it is good that this is not part of auroralib, since the TranslationTask here also
      * receives a View as an input (the view that is to be updated), but you might want to change
      * this to your liking for your plugin.
      */
     // TODO: Maybe move abstract version to auroralib instead of ProcessorTranslationThread and make
     //  onPostExecute abstract
-    static public class TranslationTask extends AsyncTask<Void, Void, List<String>> {
+    public static class TranslationTask extends AsyncTask<Void, Void, List<String>> {
         private List<String> mSentences;
         private String mSourceLanguage;
         private String mDestinationLanguage;
@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         TranslationTask(List<String> sentences, String sourceLanguage, String destinationLanguage,
-                        TranslationServiceCaller translationServiceCaller, View v){
+                        TranslationServiceCaller translationServiceCaller, View v) {
             this.mSentences = sentences;
             this.mSourceLanguage = sourceLanguage;
             this.mDestinationLanguage = destinationLanguage;
@@ -203,18 +203,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        @Override protected List<String> doInBackground(Void... params) {
+        @Override
+        protected List<String> doInBackground(Void... params) {
             List<String> result = mTranslationServiceCaller.translateOperation(mSentences,
                     mSourceLanguage, mDestinationLanguage);
             Log.d(getClass().getSimpleName(), result.toString());
             return result;
         }
 
-        @Override protected void onPostExecute(List<String> translatedSentences) {
+        @Override
+        protected void onPostExecute(List<String> translatedSentences) {
             Log.d(getClass().getSimpleName(), translatedSentences.toString());
             StringBuilder sb = new StringBuilder();
-            for (String s : translatedSentences)
-            {
+            for (String s : translatedSentences) {
                 sb.append(s);
                 sb.append("\n");
             }

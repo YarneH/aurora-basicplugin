@@ -48,6 +48,7 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
 
         // Get the images
         List<ExtractedImage> images = extractedText.getImages();
+
         for(ExtractedImage image: images) {
             res.getImages().add(image.getBitmap());
         }
@@ -56,15 +57,23 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
         if(extractedText.getTitleAnnotation() != null) {
             List<CoreMap> sentences = extractedText.getTitleAnnotation().get(CoreAnnotations.SentencesAnnotation.class);
 
-            for (CoreMap sentence : sentences) {
-                List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
-                if (tokens.size() > 0) {
-                    CoreLabel token = tokens.get(0);
-                    Log.d("NLP", token.tag());
-                }
-            }
+            processSentences(sentences);
         }
         return res;
+    }
+
+    /**
+     * Processes the sentences in a given list
+     * @param sentences the list of sentences to be processed
+     */
+    private void processSentences(List<CoreMap> sentences) {
+        for (CoreMap sentence : sentences) {
+            List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
+            if (tokens.size() > 0) {
+                CoreLabel token = tokens.get(0);
+                Log.d("NLP", token.tag());
+            }
+        }
     }
 
 }
