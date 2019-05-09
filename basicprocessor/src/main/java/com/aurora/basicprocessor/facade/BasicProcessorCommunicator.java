@@ -69,7 +69,7 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
     private void processSentences(List<CoreMap> sentences) {
         for (CoreMap sentence : sentences) {
             List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
-            if (tokens.size() > 0) {
+            if (!tokens.isEmpty()) {
                 CoreLabel token = tokens.get(0);
                 Log.d("NLP", token.tag());
             }
