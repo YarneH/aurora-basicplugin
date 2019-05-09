@@ -13,7 +13,7 @@
 
         <!-- Required internal services -->
         <meta-data android:name="TEXT_EXTRACTION"
-        android:value="true" />
+            android:value="true" />
         <meta-data android:name="IMAGE_EXTRACTION"
             android:value="true" />
         <meta-data android:name="NLP_TOKENIZE"
