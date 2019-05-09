@@ -28,23 +28,28 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     /**
-     *  Textview for showing the processed text
+     * Constant for right margin
      */
-    private TextView mTextView;
+    private static final int RIGHT_MARGIN = 10;
+
+    /**
+     * Textview for showing the processed text
+     */
+    private TextView mTextView = null;
 
     // TODO: This should be singleton-like
     /**
      * Communicator that acts as an interface to the BasicPlugin's processor
      */
-    private BasicProcessorCommunicator mBasicProcessorCommunicator;
+    private BasicProcessorCommunicator mBasicProcessorCommunicator = null;
     /**
      * ServiceCaller for using Aurora's translatipon service
      */
-    private TranslationServiceCaller mTranslationServiceCaller;
+    private TranslationServiceCaller mTranslationServiceCaller = null;
     /**
      * The BasicPluginObject that is being represented
      */
-    private BasicPluginObject mBasicPluginObject;
+    private BasicPluginObject mBasicPluginObject = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,9 +60,9 @@ public class MainActivity extends AppCompatActivity {
         /*
          * This OnClickListener calls The translationTask which is defined lower.
          */
-        mTextView.setOnClickListener(v -> {
+        mTextView.setOnClickListener((View v) -> {
             List<String> inputSentences;
-            if(mBasicPluginObject.getResult() != null) {
+            if (mBasicPluginObject.getResult() != null) {
                 inputSentences = Arrays.asList(mBasicPluginObject.getResult().split("\n"));
                 new TranslationTask(inputSentences, "en", "nl",
                         mTranslationServiceCaller, v).execute();
@@ -88,86 +93,138 @@ public class MainActivity extends AppCompatActivity {
         // Handle the data that came with the intent that opened BasicPlugin
         Intent intentThatStartedThisActivity = getIntent();
 
-        if(intentThatStartedThisActivity.getAction() == null) {
-            Toast.makeText(this, "ERROR: The intent had no action.", Snackbar.LENGTH_LONG).show();
+        processIntent(intentThatStartedThisActivity);
+    }
+
+    /**
+     * Processes the intent that started this activity
+     *
+     * @param intentThatStartedThisActivity the intent that started this activity
+     */
+    private void processIntent(Intent intentThatStartedThisActivity) {
+
+        // First check if intent is good
+        if (checkIntent(intentThatStartedThisActivity)) {
             return;
-        } else if(!intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
-            Toast.makeText(this, "ERROR: The intent had incorrect action.", Snackbar.LENGTH_LONG).show();
-            return;
-        } else if(!intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TYPE)) {
-            Toast.makeText(this, "ERROR: The intent had no specified input type.",
+        }
+
+        // If not failed, continue processing
+
+        // Get the Uri to the transferred file
+        Uri fileUri = intentThatStartedThisActivity.getData();
+        if (fileUri == null) {
+            Toast.makeText(this, "ERROR: The intent had no url in the data field",
                     Snackbar.LENGTH_LONG).show();
             return;
         }
 
         // Get the input type
         String inputType = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TYPE);
+        boolean successful;
 
-        // Get the Uri to the transferred file
-        Uri fileUri = intentThatStartedThisActivity.getData();
-        if(fileUri == null) {
-            Toast.makeText(this, "ERROR: The intent had no url in the data field",
+        // Switch on the different kinds of input types that could be in the temp file
+        if (Constants.PLUGIN_INPUT_TYPE_EXTRACTED_TEXT.equals(inputType)) {
+            successful = processExtractedText(fileUri);
+
+        } else if (Constants.PLUGIN_INPUT_TYPE_OBJECT.equals(inputType)) {
+            successful = processPluginObject(fileUri);
+
+        } else {
+            Toast.makeText(this, "ERROR: The intent had an unsupported input type.",
                     Snackbar.LENGTH_LONG).show();
+            successful = false;
+        }
+
+        // If extraction was not successful, return
+        if (!successful) {
             return;
         }
 
-        // Switch on the different kinds of input types that could be in the temp file
-        switch (inputType) {
-
-            case Constants.PLUGIN_INPUT_TYPE_EXTRACTED_TEXT:
-                // Convert the read file to an ExtractedText object
-                try {
-                    ExtractedText inputText = ExtractedText.getExtractedTextFromFile( fileUri,
-                            this);
-                    mBasicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    return;
-                }
-                break;
-
-            case Constants.PLUGIN_INPUT_TYPE_OBJECT:
-                // Convert the read file to an PluginObject
-                try {
-                    mBasicPluginObject = BasicPluginObject.getPluginObjectFromFile(fileUri, this,
-                            BasicPluginObject.class);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    return;
-                }
-                break;
-
-
-            default:
-                Toast.makeText(this, "ERROR: The intent had an unsupported input type.",
-                        Snackbar.LENGTH_LONG).show();
-                return;
-        }
-
         // Show the processed text
-        if (mBasicPluginObject != null){
+        if (mBasicPluginObject != null) {
             String filename = mBasicPluginObject.getFileName();
             String result = mBasicPluginObject.getResult();
             mTextView.setText(filename + '\n' + result);
 
             List<Bitmap> images = mBasicPluginObject.getImages();
-            if(images != null && !images.isEmpty()) {
+            if (images != null && !images.isEmpty()) {
                 LinearLayout imageGallery = findViewById(R.id.imageGallery);
                 for (Bitmap image : images) {
                     imageGallery.addView(getImageView(image));
                 }
             }
         }
+
     }
 
-    protected void onDestroy() {
-        super.onDestroy();
+    /**
+     * Processes the read file as a plugin object
+     * @param fileUri the uri of the file
+     * @return true if the processing was successful, false otherwise
+     */
+    private boolean processPluginObject(Uri fileUri) {
+        // Convert the read file to an PluginObject
+        boolean success = true;
+        try {
+            mBasicPluginObject = BasicPluginObject.getPluginObjectFromFile(fileUri, this,
+                    BasicPluginObject.class);
+        } catch (IOException e) {
+            Log.e("MainActivity", "Something went wrong with getting the pluggin object", e);
+            success = false;
+        }
+        return success;
+    }
+
+    /**
+     * Processes the read file a an extracted text object
+     * @param fileUri the uri of the file
+     * @return true if successful, false otherwise
+     */
+    private boolean processExtractedText(Uri fileUri) {
+        // Convert the read file to an ExtractedText object
+        boolean success = true;
+        try {
+            ExtractedText inputText = ExtractedText.getExtractedTextFromFile(fileUri,
+                    this);
+            mBasicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
+        } catch (IOException e) {
+            Log.e("MainActivity", "Something went wrong with getting the extracted text", e);
+            success = false;
+        }
+
+        return success;
+    }
+
+    /**
+     * Check if the intent that started this activity has the right attributes, will also show a toast to the user
+     * in that case.
+     *
+     * @param intentThatStartedThisActivity the intent that started this activity
+     * @return true if the intent does not have the right attributes
+     */
+    private boolean checkIntent(Intent intentThatStartedThisActivity) {
+        boolean intentWrong = false;
+
+        if (intentThatStartedThisActivity.getAction() == null) {
+            Toast.makeText(this, "ERROR: The intent had no action.", Snackbar.LENGTH_LONG).show();
+            intentWrong = true;
+        } else if (!intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
+            Toast.makeText(this, "ERROR: The intent had incorrect action.", Snackbar.LENGTH_LONG).show();
+            intentWrong = true;
+        } else if (!intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TYPE)) {
+            Toast.makeText(this, "ERROR: The intent had no specified input type.",
+                    Snackbar.LENGTH_LONG).show();
+            intentWrong = true;
+        }
+
+        return intentWrong;
     }
 
     private View getImageView(Bitmap image) {
         ImageView imageView = new ImageView(getApplicationContext());
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        lp.setMargins(0, 0, 10, 0);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(0, 0, RIGHT_MARGIN, 0);
         imageView.setLayoutParams(lp);
         imageView.setImageBitmap(image);
         return imageView;
@@ -176,14 +233,14 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Asynctask to perform translation operation.
      * You should only adapt the onPostExecute method to your liking.
-     *
+     * <p>
      * For now it is good that this is not part of auroralib, since the TranslationTask here also
      * receives a View as an input (the view that is to be updated), but you might want to change
      * this to your liking for your plugin.
      */
     // TODO: Maybe move abstract version to auroralib instead of ProcessorTranslationThread and make
     //  onPostExecute abstract
-    static public class TranslationTask extends AsyncTask<Void, Void, List<String>> {
+    public static class TranslationTask extends AsyncTask<Void, Void, List<String>> {
         private List<String> mSentences;
         private String mSourceLanguage;
         private String mDestinationLanguage;
@@ -193,7 +250,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         TranslationTask(List<String> sentences, String sourceLanguage, String destinationLanguage,
-                        TranslationServiceCaller translationServiceCaller, View v){
+                        TranslationServiceCaller translationServiceCaller, View v) {
             this.mSentences = sentences;
             this.mSourceLanguage = sourceLanguage;
             this.mDestinationLanguage = destinationLanguage;
@@ -203,18 +260,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        @Override protected List<String> doInBackground(Void... params) {
+        @Override
+        protected List<String> doInBackground(Void... params) {
             List<String> result = mTranslationServiceCaller.translateOperation(mSentences,
                     mSourceLanguage, mDestinationLanguage);
             Log.d(getClass().getSimpleName(), result.toString());
             return result;
         }
 
-        @Override protected void onPostExecute(List<String> translatedSentences) {
+        @Override
+        protected void onPostExecute(List<String> translatedSentences) {
             Log.d(getClass().getSimpleName(), translatedSentences.toString());
             StringBuilder sb = new StringBuilder();
-            for (String s : translatedSentences)
-            {
+            for (String s : translatedSentences) {
                 sb.append(s);
                 sb.append("\n");
             }
