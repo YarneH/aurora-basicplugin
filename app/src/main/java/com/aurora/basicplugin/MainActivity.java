@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         /*
          * This OnClickListener calls The translationTask which is defined lower.
          */
-        mTextView.setOnClickListener(v -> {
+        mTextView.setOnClickListener((View v) -> {
             List<String> inputSentences;
             if (mBasicPluginObject.getResult() != null) {
                 inputSentences = Arrays.asList(mBasicPluginObject.getResult().split("\n"));
@@ -93,74 +93,107 @@ public class MainActivity extends AppCompatActivity {
         // Handle the data that came with the intent that opened BasicPlugin
         Intent intentThatStartedThisActivity = getIntent();
 
-        if (intentThatStartedThisActivity.getAction() == null) {
-            Toast.makeText(this, "ERROR: The intent had no action.", Snackbar.LENGTH_LONG).show();
-        } else if (!intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
-            Toast.makeText(this, "ERROR: The intent had incorrect action.", Snackbar.LENGTH_LONG).show();
-        } else if (!intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TYPE)) {
-            Toast.makeText(this, "ERROR: The intent had no specified input type.",
+        processIntent(intentThatStartedThisActivity);
+    }
+
+    /**
+     * Processes the intent that started this activity
+     *
+     * @param intentThatStartedThisActivity the intent that started this activity
+     */
+    private void processIntent(Intent intentThatStartedThisActivity) {
+
+        // First check if intent is good
+        if (checkIntent(intentThatStartedThisActivity)) {
+            return;
+        }
+
+        // If not failed, continue processing
+
+        // Get the Uri to the transferred file
+        Uri fileUri = intentThatStartedThisActivity.getData();
+        if (fileUri == null) {
+            Toast.makeText(this, "ERROR: The intent had no url in the data field",
                     Snackbar.LENGTH_LONG).show();
-        } else {
+            return;
+        }
 
-            // Get the Uri to the transferred file
-            Uri fileUri = intentThatStartedThisActivity.getData();
-            if (fileUri == null) {
-                Toast.makeText(this, "ERROR: The intent had no url in the data field",
-                        Snackbar.LENGTH_LONG).show();
-                return;
-            }
+        // Get the input type
+        String inputType = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TYPE);
+        boolean failed = false;
 
-            // Get the input type
-            String inputType = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TYPE);
-            boolean failed = false;
-
-            // Switch on the different kinds of input types that could be in the temp file
-            if (Constants.PLUGIN_INPUT_TYPE_EXTRACTED_TEXT.equals(inputType)) {
-                // Convert the read file to an ExtractedText object
-                try {
-                    ExtractedText inputText = ExtractedText.getExtractedTextFromFile(fileUri,
-                            this);
-                    mBasicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
-                } catch (IOException e) {
-                    Log.e("MainActivity", "Something went wrong with getting the extracted text", e);
-                    failed = true;
-                }
-
-            } else if (Constants.PLUGIN_INPUT_TYPE_OBJECT.equals(inputType)) {
-                // Convert the read file to an PluginObject
-                try {
-                    mBasicPluginObject = BasicPluginObject.getPluginObjectFromFile(fileUri, this,
-                            BasicPluginObject.class);
-                } catch (IOException e) {
-                    Log.e("MainActivity", "Something went wrong with getting the pluggin object", e);
-                    failed = true;
-                }
-
-            } else {
-                Toast.makeText(this, "ERROR: The intent had an unsupported input type.",
-                        Snackbar.LENGTH_LONG).show();
+        // Switch on the different kinds of input types that could be in the temp file
+        if (Constants.PLUGIN_INPUT_TYPE_EXTRACTED_TEXT.equals(inputType)) {
+            // Convert the read file to an ExtractedText object
+            try {
+                ExtractedText inputText = ExtractedText.getExtractedTextFromFile(fileUri,
+                        this);
+                mBasicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
+            } catch (IOException e) {
+                Log.e("MainActivity", "Something went wrong with getting the extracted text", e);
                 failed = true;
             }
 
-            if (failed) {
-                return;
+        } else if (Constants.PLUGIN_INPUT_TYPE_OBJECT.equals(inputType)) {
+            // Convert the read file to an PluginObject
+            try {
+                mBasicPluginObject = BasicPluginObject.getPluginObjectFromFile(fileUri, this,
+                        BasicPluginObject.class);
+            } catch (IOException e) {
+                Log.e("MainActivity", "Something went wrong with getting the pluggin object", e);
+                failed = true;
             }
 
-            // Show the processed text
-            if (mBasicPluginObject != null) {
-                String filename = mBasicPluginObject.getFileName();
-                String result = mBasicPluginObject.getResult();
-                mTextView.setText(filename + '\n' + result);
+        } else {
+            Toast.makeText(this, "ERROR: The intent had an unsupported input type.",
+                    Snackbar.LENGTH_LONG).show();
+            failed = true;
+        }
 
-                List<Bitmap> images = mBasicPluginObject.getImages();
-                if (images != null && !images.isEmpty()) {
-                    LinearLayout imageGallery = findViewById(R.id.imageGallery);
-                    for (Bitmap image : images) {
-                        imageGallery.addView(getImageView(image));
-                    }
+        if (failed) {
+            return;
+        }
+
+        // Show the processed text
+        if (mBasicPluginObject != null) {
+            String filename = mBasicPluginObject.getFileName();
+            String result = mBasicPluginObject.getResult();
+            mTextView.setText(filename + '\n' + result);
+
+            List<Bitmap> images = mBasicPluginObject.getImages();
+            if (images != null && !images.isEmpty()) {
+                LinearLayout imageGallery = findViewById(R.id.imageGallery);
+                for (Bitmap image : images) {
+                    imageGallery.addView(getImageView(image));
                 }
             }
         }
+
+    }
+
+    /**
+     * Check if the intent that started this activity has the right attributes, will also show a toast to the user
+     * in that case.
+     *
+     * @param intentThatStartedThisActivity the intent that started this activity
+     * @return true if the intent does not have the right attributes
+     */
+    private boolean checkIntent(Intent intentThatStartedThisActivity) {
+        boolean intentWrong = false;
+
+        if (intentThatStartedThisActivity.getAction() == null) {
+            Toast.makeText(this, "ERROR: The intent had no action.", Snackbar.LENGTH_LONG).show();
+            intentWrong = true;
+        } else if (!intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
+            Toast.makeText(this, "ERROR: The intent had incorrect action.", Snackbar.LENGTH_LONG).show();
+            intentWrong = true;
+        } else if (!intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TYPE)) {
+            Toast.makeText(this, "ERROR: The intent had no specified input type.",
+                    Snackbar.LENGTH_LONG).show();
+            intentWrong = true;
+        }
+
+        return intentWrong;
     }
 
     private View getImageView(Bitmap image) {
