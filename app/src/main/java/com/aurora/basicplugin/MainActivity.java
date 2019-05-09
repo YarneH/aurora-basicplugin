@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
                 inputSentences = Arrays.asList(mBasicPluginObject.getResult().split("\n"));
                 new TranslationTask(inputSentences, "en", "nl",
                         mTranslationServiceCaller, v).execute();
+                v.setOnClickListener(null);
             }
         });
 
@@ -246,7 +247,6 @@ public class MainActivity extends AppCompatActivity {
         private String mDestinationLanguage;
         private TranslationServiceCaller mTranslationServiceCaller;
         private TextView mTextView;
-        //private WeakReference<Activity> mActivityWeakReference;
 
 
         TranslationTask(List<String> sentences, String sourceLanguage, String destinationLanguage,
@@ -256,7 +256,6 @@ public class MainActivity extends AppCompatActivity {
             this.mDestinationLanguage = destinationLanguage;
             this.mTranslationServiceCaller = translationServiceCaller;
             this.mTextView = (TextView) v;
-            //this.mActivityWeakReference = new WeakReference<Activity>(activity);
         }
 
 
