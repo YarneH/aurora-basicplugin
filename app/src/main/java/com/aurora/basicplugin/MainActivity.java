@@ -55,15 +55,12 @@ public class MainActivity extends AppCompatActivity {
         /*
          * This OnClickListener calls The translationTask which is defined lower.
          */
-        mTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                List<String> inputSentences;
+        mTextView.setOnClickListener(v -> {
+            List<String> inputSentences;
+            if(mBasicPluginObject.getResult() != null) {
                 inputSentences = Arrays.asList(mBasicPluginObject.getResult().split("\n"));
-
                 new TranslationTask(inputSentences, "en", "nl",
                         mTranslationServiceCaller, v).execute();
-
             }
         });
 
@@ -153,9 +150,10 @@ public class MainActivity extends AppCompatActivity {
             String result = mBasicPluginObject.getResult();
             mTextView.setText(filename + '\n' + result);
 
-            if(!mBasicPluginObject.getImages().isEmpty()) {
+            List<Bitmap> images = mBasicPluginObject.getImages();
+            if(images != null && !images.isEmpty()) {
                 LinearLayout imageGallery = findViewById(R.id.imageGallery);
-                for (Bitmap image : mBasicPluginObject.getImages()) {
+                for (Bitmap image : images) {
                     imageGallery.addView(getImageView(image));
                 }
             }

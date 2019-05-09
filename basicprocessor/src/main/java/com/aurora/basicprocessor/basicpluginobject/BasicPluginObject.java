@@ -22,7 +22,7 @@ public class BasicPluginObject extends PluginObject {
     /**
      * The possibly empty list of images from the file that is opened
      */
-    private List<Bitmap> mImages = new ArrayList<>();
+    private transient List<Bitmap> mImages = new ArrayList<>();
 
     public BasicPluginObject(String fileName) {
         super(fileName, UNIQUE_PLUGIN_NAME);
