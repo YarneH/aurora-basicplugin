@@ -2,7 +2,7 @@ package com.aurora.basicprocessor.basicpluginobject;
 
 import org.junit.Test;
 
-public class BasicPluginObjectTest {
+public class BasicPluginObjectUnitTest {
 
     @Test
     public void BasicPluginObject_Gson(){
