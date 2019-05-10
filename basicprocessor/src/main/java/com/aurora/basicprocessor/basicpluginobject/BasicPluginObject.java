@@ -3,6 +3,8 @@ package com.aurora.basicprocessor.basicpluginobject;
 import android.graphics.Bitmap;
 
 import com.aurora.auroralib.PluginObject;
+import com.aurora.auroralib.translation.BitMapListAdapter;
+import com.google.gson.annotations.JsonAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +24,8 @@ public class BasicPluginObject extends PluginObject {
     /**
      * The possibly empty list of images from the file that is opened
      */
-    private transient List<Bitmap> mImages = new ArrayList<>();
+    @JsonAdapter(BitMapListAdapter.class)
+    private List<Bitmap> mImages = new ArrayList<>();
 
     public BasicPluginObject(String fileName) {
         super(fileName, UNIQUE_PLUGIN_NAME);
