@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String LOG_TAG = MainActivity.class.getSimpleName();
     /**
      * Constant for right margin
      */
@@ -269,13 +270,17 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(List<String> translatedSentences) {
-            Log.d(getClass().getSimpleName(), translatedSentences.toString());
-            StringBuilder sb = new StringBuilder();
-            for (String s : translatedSentences) {
-                sb.append(s);
-                sb.append("\n");
+            if (translatedSentences != null) {
+                Log.d(getClass().getSimpleName(), translatedSentences.toString());
+                StringBuilder sb = new StringBuilder();
+                for (String s : translatedSentences) {
+                    sb.append(s);
+                    sb.append("\n");
+                }
+                mTextView.setText(sb.toString());
+            } else {
+                Log.e(LOG_TAG, "Error in translation request");
             }
-            mTextView.setText(sb.toString());
         }
     }
 }
