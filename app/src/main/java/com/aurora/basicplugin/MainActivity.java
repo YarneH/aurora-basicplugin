@@ -148,9 +148,11 @@ public class MainActivity extends AppCompatActivity {
 
         // Show the processed text
         if (mBasicPluginObject != null) {
-            String filename = mBasicPluginObject.getFileName();
-            String result = mBasicPluginObject.getResult();
-            mTextView.setText(filename + '\n' + result);
+            String text =
+                    mBasicPluginObject.getFileName() +
+                    "\n" +
+                    mBasicPluginObject.getResult();
+            mTextView.setText(text);
 
             List<Bitmap> images = mBasicPluginObject.getImages();
             if (!images.isEmpty()) {
@@ -173,11 +175,11 @@ public class MainActivity extends AppCompatActivity {
         try {
             mBasicPluginObject = BasicPluginObject.getPluginObjectFromFile(fileUri, this,
                     BasicPluginObject.class);
+            return true;
         } catch (IOException e) {
             Log.e(LOG_TAG, "Something went wrong with getting the plugin object", e);
             return false;
         }
-        return true;
     }
 
     /**
@@ -192,11 +194,11 @@ public class MainActivity extends AppCompatActivity {
                     this);
             mBasicPluginObject =
                     (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
+            return true;
         } catch (IOException e) {
             Log.e(LOG_TAG, "Something went wrong with getting the extracted text", e);
             return false;
         }
-        return true;
     }
 
     /**
