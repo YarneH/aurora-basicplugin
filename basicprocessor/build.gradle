@@ -8,8 +8,8 @@ android {
     defaultConfig {
         minSdkVersion 22
         targetSdkVersion 28
-        versionCode 4
-        versionName "0.4"
+        versionCode 5
+        versionName "0.6"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -22,7 +22,23 @@ android {
         }
     }
 
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
+
 }
+
+apply plugin: 'jacoco-android'
+
+jacoco {
+    toolVersion = "0.8.3"
+}
+
+tasks.withType(Test) {
+    jacoco.includeNoLocationClasses = true
+}
+
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -36,4 +52,9 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+
+    implementation('edu.stanford.nlp:stanford-corenlp:3.9.2') {
+        exclude group: 'org.apache.lucene'
+        exclude group: 'com.sun.xml.bind'
+    }
 }

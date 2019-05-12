@@ -2,13 +2,13 @@ package com.aurora.basicprocessor.basicpluginobject;
 
 import org.junit.Test;
 
-public class BasicPluginObjectTest {
+public class BasicPluginObjectUnitTest {
 
     @Test
     public void BasicPluginObject_Gson(){
         // Arrange
         // Create a BasicPluginObject
-        BasicPluginObject originalBasicPluginObject = new BasicPluginObject();
+        BasicPluginObject originalBasicPluginObject = new BasicPluginObject("Title");
         originalBasicPluginObject.setResult("Test");
 
         // Act

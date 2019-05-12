@@ -1,43 +1,81 @@
 package com.aurora.basicprocessor.facade;
 
+
+import android.content.Context;
+import android.util.Log;
+
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.auroralib.ExtractedImage;
 import com.aurora.auroralib.PluginObject;
-import com.aurora.basicprocessor.ProcessorCommunicator;
+import com.aurora.auroralib.ProcessorCommunicator;
+import com.aurora.basicprocessor.PluginConstants;
 import com.aurora.basicprocessor.basicpluginobject.BasicPluginObject;
+
+import java.util.List;
+
+import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.util.CoreMap;
 
 /**
  * Communicator interface to the BasicProcessor
  */
 public class BasicProcessorCommunicator extends ProcessorCommunicator {
 
-    public BasicProcessorCommunicator(){}
+    public BasicProcessorCommunicator(Context context) {
+        /*
+         * A UNIQUE_PLUGIN_NAME needs to be passed to the constructor of ProcessorCommunicator for
+         * proper configuration of the cache
+         */
+        super(PluginConstants.UNIQUE_PLUGIN_NAME, context);
+    }
 
     /**
-     * Very simple process function that just adds some text to extractedText
+     * Very simple process function that just adds some text to extractedText. It also logs whether
+     * or not NLP tokens are present
      *
      * @param extractedText The text that was extracted after Aurora's internal processing
-     * @return A string that consists of standard text and the result of extractedText.toString()
+     * @return A BasicPluginObject that consists of standard text and the result of
+     * extractedText.toString(). It also contains Images if these were present.
      */
     @Override
-    public PluginObject process(ExtractedText extractedText) {
-        BasicPluginObject res = new BasicPluginObject();
+    protected PluginObject process(ExtractedText extractedText) {
+
+        BasicPluginObject res = new BasicPluginObject(extractedText.getFilename());
+
+        // Get the text
         res.setResult("Basic Plugin processed:\n" + extractedText.toString());
+
+        // Get the images
+        List<ExtractedImage> images = extractedText.getImages();
+
+        for(ExtractedImage image: images) {
+            res.getImages().add(image.getBitmap());
+        }
+
+        // Log whether there are NLP tags
+        if(extractedText.getTitleAnnotation() != null) {
+            List<CoreMap> sentences = extractedText.getTitleAnnotation().get(CoreAnnotations.SentencesAnnotation.class);
+
+            processSentences(sentences);
+        }
         return res;
     }
 
-    // TODO depending on whether we will also allow regular Strings to be passed: either remove this
-    // or include this as an abstract method maybe
-    // Maybe also include it as an abstract method in the superclass  then because then it should
-    // also always be implemented
     /**
-     * Very simple process function that just adds some text to a String
-     *
-     * @param inputText The string that has to be processed
-     * @return A string that consists of standard text and the inputText
+     * Processes the sentences in a given list
+     * @param sentences the list of sentences to be processed
      */
-    public PluginObject process(String inputText) {
-        BasicPluginObject res = new BasicPluginObject();
-        res.setResult("Basic Plugin processed:\n" + inputText);
-        return res;
+    private void processSentences(List<CoreMap> sentences) {
+        for (CoreMap sentence : sentences) {
+            List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
+            if (!tokens.isEmpty()) {
+                CoreLabel token = tokens.get(0);
+                // This log is currently to manually check if NLP is working.
+                // TODO: Add test for this
+                Log.d("NLP", token.tag());
+            }
+        }
     }
+
 }
