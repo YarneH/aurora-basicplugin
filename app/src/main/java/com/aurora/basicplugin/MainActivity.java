@@ -91,13 +91,7 @@ public class MainActivity extends AppCompatActivity {
          */
         mTranslationServiceCaller = new TranslationServiceCaller(getApplicationContext());
 
-        //Remove this (Is now used for testing sometimes)
-        /*
-        BasicPluginObject testBasicPluginObject = (BasicPluginObject)
-                mBasicProcessorCommunicator.pipeline("dummyfilename", "test");
-        String testResult = testBasicPluginObject.getResult();
-        mTextView.setText(testResult);
-        */
+        // TODO: DO these 2 lines something meaningfull?
         mBasicPluginObject = new BasicPluginObject("");
         mBasicPluginObject.setResult(mTextView.getText().toString());
 
@@ -154,12 +148,14 @@ public class MainActivity extends AppCompatActivity {
 
         // Show the processed text
         if (mBasicPluginObject != null) {
-            String filename = mBasicPluginObject.getFileName();
-            String result = mBasicPluginObject.getResult();
-            mTextView.setText(filename + '\n' + result);
+            String text =
+                    mBasicPluginObject.getFileName() +
+                    "\n" +
+                    mBasicPluginObject.getResult();
+            mTextView.setText(text);
 
             List<Bitmap> images = mBasicPluginObject.getImages();
-            if (images != null && !images.isEmpty()) {
+            if (!images.isEmpty()) {
                 LinearLayout imageGallery = findViewById(R.id.imageGallery);
                 for (Bitmap image : images) {
                     imageGallery.addView(getImageView(image));
@@ -176,26 +172,24 @@ public class MainActivity extends AppCompatActivity {
      * @return true if the processing was successful, false otherwise
      */
     private boolean processPluginObject(Uri fileUri) {
-        // Convert the read file to an PluginObject
         boolean success = true;
         try {
             mBasicPluginObject = BasicPluginObject.getPluginObjectFromFile(fileUri, this,
                     BasicPluginObject.class);
         } catch (IOException e) {
-            Log.e("MainActivity", "Something went wrong with getting the pluggin object", e);
+            Log.e(LOG_TAG, "Something went wrong with getting the plugin object", e);
             success = false;
         }
         return success;
     }
 
     /**
-     * Processes the read file a an extracted text object
+     * Processes the read file as an extracted text object
      *
      * @param fileUri the uri of the file
      * @return true if successful, false otherwise
      */
     private boolean processExtractedText(Uri fileUri) {
-        // Convert the read file to an ExtractedText object
         boolean success = true;
         try {
             ExtractedText inputText = ExtractedText.getExtractedTextFromFile(fileUri,
@@ -203,10 +197,9 @@ public class MainActivity extends AppCompatActivity {
             mBasicPluginObject =
                     (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
         } catch (IOException e) {
-            Log.e("MainActivity", "Something went wrong with getting the extracted text", e);
+            Log.e(LOG_TAG, "Something went wrong with getting the extracted text", e);
             success = false;
         }
-
         return success;
     }
 
@@ -244,11 +237,11 @@ public class MainActivity extends AppCompatActivity {
      */
     private View getImageView(Bitmap image) {
         ImageView imageView = new ImageView(getApplicationContext());
-        LinearLayout.LayoutParams lp =
+        LinearLayout.LayoutParams layoutParams =
                 new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
-        lp.setMargins(0, 0, RIGHT_MARGIN, 0);
-        imageView.setLayoutParams(lp);
+        layoutParams.setMargins(0, 0, RIGHT_MARGIN, 0);
+        imageView.setLayoutParams(layoutParams);
         imageView.setImageBitmap(image);
         return imageView;
     }
@@ -287,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
         protected List<String> doInBackground(Void... params) {
             List<String> result = mTranslationServiceCaller.translateOperation(mSentences,
                     mSourceLanguage, mDestinationLanguage);
-            Log.d(LOG_TAG, result.toString());
+            Log.v(LOG_TAG, result.toString());
             return result;
         }
 
