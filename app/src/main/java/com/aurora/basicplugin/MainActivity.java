@@ -27,7 +27,12 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+
+    /**
+     * Tag for logging
+     */
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
+
     /**
      * Constant for right margin
      */
@@ -38,20 +43,24 @@ public class MainActivity extends AppCompatActivity {
      */
     private TextView mTextView = null;
 
-    // TODO: This should be singleton-like
     /**
      * Communicator that acts as an interface to the BasicPlugin's processor
      */
     private BasicProcessorCommunicator mBasicProcessorCommunicator = null;
+
     /**
      * ServiceCaller for using Aurora's translatipon service
      */
     private TranslationServiceCaller mTranslationServiceCaller = null;
+    
     /**
      * The BasicPluginObject that is being represented
      */
     private BasicPluginObject mBasicPluginObject = null;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -121,7 +130,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Get the input type
-        String inputType = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TYPE);
+        String inputType =
+                intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TYPE);
         boolean successful;
 
         // Switch on the different kinds of input types that could be in the temp file
@@ -161,6 +171,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Processes the read file as a plugin object
+     *
      * @param fileUri the uri of the file
      * @return true if the processing was successful, false otherwise
      */
@@ -179,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Processes the read file a an extracted text object
+     *
      * @param fileUri the uri of the file
      * @return true if successful, false otherwise
      */
@@ -188,7 +200,8 @@ public class MainActivity extends AppCompatActivity {
         try {
             ExtractedText inputText = ExtractedText.getExtractedTextFromFile(fileUri,
                     this);
-            mBasicPluginObject = (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
+            mBasicPluginObject =
+                    (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
         } catch (IOException e) {
             Log.e("MainActivity", "Something went wrong with getting the extracted text", e);
             success = false;
@@ -198,7 +211,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Check if the intent that started this activity has the right attributes, will also show a toast to the user
+     * Check if the intent that started this activity has the right attributes, will also show a
+     * toast to the user
      * in that case.
      *
      * @param intentThatStartedThisActivity the intent that started this activity
@@ -222,9 +236,16 @@ public class MainActivity extends AppCompatActivity {
         return intentWrong;
     }
 
+    /**
+     * Returns an image view for a single bitmap. This is intended for use in the galery.
+     *
+     * @param image a Bitmap of the image
+     * @return a View of the image
+     */
     private View getImageView(Bitmap image) {
         ImageView imageView = new ImageView(getApplicationContext());
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+        LinearLayout.LayoutParams lp =
+                new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
         lp.setMargins(0, 0, RIGHT_MARGIN, 0);
         imageView.setLayoutParams(lp);
@@ -259,19 +280,23 @@ public class MainActivity extends AppCompatActivity {
             this.mTextView = (TextView) v;
         }
 
-
+        /**
+         * {@inheritDoc}
+         */
         @Override
         protected List<String> doInBackground(Void... params) {
             List<String> result = mTranslationServiceCaller.translateOperation(mSentences,
                     mSourceLanguage, mDestinationLanguage);
-            Log.d(getClass().getSimpleName(), result.toString());
+            Log.d(LOG_TAG, result.toString());
             return result;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         protected void onPostExecute(List<String> translatedSentences) {
             if (translatedSentences != null) {
-                Log.d(getClass().getSimpleName(), translatedSentences.toString());
                 StringBuilder sb = new StringBuilder();
                 for (String s : translatedSentences) {
                     sb.append(s);
