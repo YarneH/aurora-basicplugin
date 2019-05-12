@@ -91,13 +91,7 @@ public class MainActivity extends AppCompatActivity {
          */
         mTranslationServiceCaller = new TranslationServiceCaller(getApplicationContext());
 
-        //Remove this (Is now used for testing sometimes)
-        /*
-        BasicPluginObject testBasicPluginObject = (BasicPluginObject)
-                mBasicProcessorCommunicator.pipeline("dummyfilename", "test");
-        String testResult = testBasicPluginObject.getResult();
-        mTextView.setText(testResult);
-        */
+        // TODO: DO these 2 lines something meaningfull?
         mBasicPluginObject = new BasicPluginObject("");
         mBasicPluginObject.setResult(mTextView.getText().toString());
 
@@ -159,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
             mTextView.setText(filename + '\n' + result);
 
             List<Bitmap> images = mBasicPluginObject.getImages();
-            if (images != null && !images.isEmpty()) {
+            if (!images.isEmpty()) {
                 LinearLayout imageGallery = findViewById(R.id.imageGallery);
                 for (Bitmap image : images) {
                     imageGallery.addView(getImageView(image));
@@ -176,38 +170,33 @@ public class MainActivity extends AppCompatActivity {
      * @return true if the processing was successful, false otherwise
      */
     private boolean processPluginObject(Uri fileUri) {
-        // Convert the read file to an PluginObject
-        boolean success = true;
         try {
             mBasicPluginObject = BasicPluginObject.getPluginObjectFromFile(fileUri, this,
                     BasicPluginObject.class);
         } catch (IOException e) {
-            Log.e("MainActivity", "Something went wrong with getting the pluggin object", e);
-            success = false;
+            Log.e(LOG_TAG, "Something went wrong with getting the plugin object", e);
+            return false;
         }
-        return success;
+        return true;
     }
 
     /**
-     * Processes the read file a an extracted text object
+     * Processes the read file as an extracted text object
      *
      * @param fileUri the uri of the file
      * @return true if successful, false otherwise
      */
     private boolean processExtractedText(Uri fileUri) {
-        // Convert the read file to an ExtractedText object
-        boolean success = true;
         try {
             ExtractedText inputText = ExtractedText.getExtractedTextFromFile(fileUri,
                     this);
             mBasicPluginObject =
                     (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
         } catch (IOException e) {
-            Log.e("MainActivity", "Something went wrong with getting the extracted text", e);
-            success = false;
+            Log.e(LOG_TAG, "Something went wrong with getting the extracted text", e);
+            return false;
         }
-
-        return success;
+        return true;
     }
 
     /**
@@ -244,11 +233,11 @@ public class MainActivity extends AppCompatActivity {
      */
     private View getImageView(Bitmap image) {
         ImageView imageView = new ImageView(getApplicationContext());
-        LinearLayout.LayoutParams lp =
+        LinearLayout.LayoutParams layoutParams =
                 new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
-        lp.setMargins(0, 0, RIGHT_MARGIN, 0);
-        imageView.setLayoutParams(lp);
+        layoutParams.setMargins(0, 0, RIGHT_MARGIN, 0);
+        imageView.setLayoutParams(layoutParams);
         imageView.setImageBitmap(image);
         return imageView;
     }
@@ -287,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
         protected List<String> doInBackground(Void... params) {
             List<String> result = mTranslationServiceCaller.translateOperation(mSentences,
                     mSourceLanguage, mDestinationLanguage);
-            Log.d(LOG_TAG, result.toString());
+            Log.v(LOG_TAG, result.toString());
             return result;
         }
 

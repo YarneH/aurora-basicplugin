@@ -1,6 +1,7 @@
 package com.aurora.basicprocessor.basicpluginobject;
 
 import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
 
 import com.aurora.auroralib.BitmapListAdapter;
 import com.aurora.auroralib.PluginObject;
@@ -36,11 +37,14 @@ public class BasicPluginObject extends PluginObject {
 
     public void setResult(String result) { mResult = result; }
 
-    public List<Bitmap> getImages() {
+    public @NonNull List<Bitmap> getImages() {
+        if(mImages == null) {
+            return new ArrayList<>();
+        }
         return mImages;
     }
 
-    public void setImages(List<Bitmap> mImages) {
-        this.mImages = mImages;
+    public void setImages(@NonNull final List<Bitmap> images) {
+        this.mImages = images;
     }
 }
