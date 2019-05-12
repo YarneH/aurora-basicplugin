@@ -172,14 +172,15 @@ public class MainActivity extends AppCompatActivity {
      * @return true if the processing was successful, false otherwise
      */
     private boolean processPluginObject(Uri fileUri) {
+        boolean success = true;
         try {
             mBasicPluginObject = BasicPluginObject.getPluginObjectFromFile(fileUri, this,
                     BasicPluginObject.class);
-            return true;
         } catch (IOException e) {
             Log.e(LOG_TAG, "Something went wrong with getting the plugin object", e);
-            return false;
+            success = false;
         }
+        return success;
     }
 
     /**
@@ -189,16 +190,17 @@ public class MainActivity extends AppCompatActivity {
      * @return true if successful, false otherwise
      */
     private boolean processExtractedText(Uri fileUri) {
+        boolean success = true;
         try {
             ExtractedText inputText = ExtractedText.getExtractedTextFromFile(fileUri,
                     this);
             mBasicPluginObject =
                     (BasicPluginObject) mBasicProcessorCommunicator.pipeline(inputText);
-            return true;
         } catch (IOException e) {
             Log.e(LOG_TAG, "Something went wrong with getting the extracted text", e);
-            return false;
+            success = false;
         }
+        return success;
     }
 
     /**
