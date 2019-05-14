@@ -289,7 +289,7 @@ public class MainActivity extends AppCompatActivity {
          */
         @Override
         protected void onPostExecute(List<String> translatedSentences) {
-            if (translatedSentences != null) {
+            if (translatedSentences != null && !translatedSentences.isEmpty()) {
                 StringBuilder sb = new StringBuilder();
                 for (String s : translatedSentences) {
                     sb.append(s);
@@ -297,6 +297,8 @@ public class MainActivity extends AppCompatActivity {
                 }
                 mTextView.setText(sb.toString());
             } else {
+                Toast.makeText(mTextView.getContext(), R.string.translation_error,
+                        Toast.LENGTH_LONG).show();
                 Log.e(LOG_TAG, "Error in translation request");
             }
         }
