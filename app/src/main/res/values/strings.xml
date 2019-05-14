@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Basic Plugin</string>
+    <string name="app_name">BasicPlugin</string>
     <string name="description">Developer plugin for debugging and testing, displaying the
         extracted text and images.</string>
 
