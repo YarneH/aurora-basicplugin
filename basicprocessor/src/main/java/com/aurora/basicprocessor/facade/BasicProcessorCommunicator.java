@@ -27,7 +27,7 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
          * A UNIQUE_PLUGIN_NAME needs to be passed to the constructor of ProcessorCommunicator for
          * proper configuration of the cache
          */
-        super(PluginConstants.UNIQUE_PLUGIN_NAME, context);
+        super(context);
     }
 
     /**
