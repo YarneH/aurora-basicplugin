@@ -2,10 +2,11 @@ package com.aurora.basicprocessor.facade;
 
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.util.Log;
 
-import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.ExtractedImage;
+import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.PluginObject;
 import com.aurora.auroralib.ProcessorCommunicator;
 import com.aurora.basicprocessor.basicpluginobject.BasicPluginObject;
@@ -49,7 +50,10 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
         List<ExtractedImage> images = extractedText.getImages();
 
         for(ExtractedImage image: images) {
-            res.getImages().add(image.getBitmap());
+            Bitmap bitmap = image.getBitmap();
+            if(bitmap != null) {
+                res.getImages().add(bitmap);
+            }
         }
 
         // Log whether there are NLP tags
