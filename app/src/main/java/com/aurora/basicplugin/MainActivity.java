@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private BasicProcessorCommunicator mBasicProcessorCommunicator = null;
 
     /**
-     * ServiceCaller for using Aurora's translatipon service
+     * ServiceCaller for using Aurora's translation service
      */
     private TranslationServiceCaller mTranslationServiceCaller = null;
     
@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
         mTranslationServiceCaller = new TranslationServiceCaller(getApplicationContext());
 
         /**
-         * Initialize a BasicPluginObject to avoid nuull pointers
+         * Initialize a BasicPluginObject to avoid null pointers
          */
         mBasicPluginObject = new BasicPluginObject("");
         mBasicPluginObject.setResult(mTextView.getText().toString());
