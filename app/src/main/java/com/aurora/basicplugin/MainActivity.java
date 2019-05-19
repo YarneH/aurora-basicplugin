@@ -97,7 +97,7 @@ public class MainActivity extends PluginActivity {
      */
     @Override
     protected void callProcessIntent(Intent intentThatStartedThisActivity){
-        mBasicPluginObject = processIntent(intentThatStartedThisActivity, mProcessorCommunicator,
+        mBasicPluginObject = processIntent(intentThatStartedThisActivity,
                 BasicPluginObject.class);
     }
 

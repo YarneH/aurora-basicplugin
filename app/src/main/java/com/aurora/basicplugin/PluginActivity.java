@@ -35,7 +35,7 @@ public abstract class PluginActivity extends AppCompatActivity {
 
     abstract void initializeOnCreate();
 
-    abstract void callProcessIntent(Intent intentThatstartedThisActivity);
+    abstract void callProcessIntent(Intent intentThatStartedThisActivity);
 
     abstract void representPluginObject();
 
@@ -47,19 +47,19 @@ public abstract class PluginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         initializeOnCreate();
 
-        // Handle the data that came with the intent that opened BasicPlugin
-        Intent intentThatStartedThisActivity = getIntent();
-        callProcessIntent(intentThatStartedThisActivity);
+        if (mProcessorCommunicator != null) {
+            // Handle the data that came with the intent that opened BasicPlugin
+            Intent intentThatStartedThisActivity = getIntent();
+            callProcessIntent(intentThatStartedThisActivity);
 
-        representPluginObject();
+            representPluginObject();
+        }
     }
 
     /**
      * Processes the intent that started this activity
      *
      * @param intentThatStartedThisActivity the intent that started this activity
-     * @param processorCommunicator         the processorCommunicator that should process a received
-     *                                      ExtractedText object
      * @param type                          The class of the specific PluginObject (i.e. extending
      *                                      PluginObject) that is returned by the processorCommunicator
      *                                      and used by the plugin
@@ -67,8 +67,8 @@ public abstract class PluginActivity extends AppCompatActivity {
      * @return The cached PluginObject that Aurora delivered or the PluginObject that is the result
      * of the pipeline function of the ProcessorCommunicator.
      */
-    protected <T extends PluginObject> T processIntent(Intent intentThatStartedThisActivity, ProcessorCommunicator
-                                         processorCommunicator, Class<T> type) {
+    protected <T extends PluginObject> T processIntent(Intent intentThatStartedThisActivity,
+                                                       @NonNull Class<T> type) {
 
         // First check if intent is good
         if (checkIntent(intentThatStartedThisActivity)) {
@@ -92,7 +92,7 @@ public abstract class PluginActivity extends AppCompatActivity {
         T pluginObject = null;
         // Switch on the different kinds of input types that could be in the temp file
         if (Constants.PLUGIN_INPUT_TYPE_EXTRACTED_TEXT.equals(inputType)) {
-            pluginObject = processExtractedText(fileUri, processorCommunicator);
+            pluginObject = processExtractedText(fileUri, mProcessorCommunicator);
 
         } else if (Constants.PLUGIN_INPUT_TYPE_OBJECT.equals(inputType)) {
             pluginObject = processPluginObject(fileUri, type);
@@ -132,7 +132,7 @@ public abstract class PluginActivity extends AppCompatActivity {
      *                                  ExtractedText object
      * @return The PluginObject that is the result of the pipeline function of the ProcessorCommunicator.
      */
-    private <T extends PluginObject> T processExtractedText(Uri fileUri, ProcessorCommunicator
+    private <T extends PluginObject> T processExtractedText(Uri fileUri, @NonNull ProcessorCommunicator
             processorCommunicator) {
         T pluginObject = null;
         try {
