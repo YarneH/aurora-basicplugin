@@ -8,7 +8,6 @@ import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.ExtractedImage;
 import com.aurora.auroralib.PluginObject;
 import com.aurora.auroralib.ProcessorCommunicator;
-import com.aurora.basicprocessor.PluginConstants;
 import com.aurora.basicprocessor.basicpluginobject.BasicPluginObject;
 
 import java.util.List;
