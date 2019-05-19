@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.aurora.auroralib.PluginActivity;
 import com.aurora.auroralib.translation.TranslationServiceCaller;
 import com.aurora.basicprocessor.basicpluginobject.BasicPluginObject;
 import com.aurora.basicprocessor.facade.BasicProcessorCommunicator;
