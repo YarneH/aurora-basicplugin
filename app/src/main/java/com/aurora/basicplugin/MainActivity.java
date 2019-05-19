@@ -4,7 +4,6 @@ package com.aurora.basicplugin;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
@@ -38,11 +37,6 @@ public class MainActivity extends PluginActivity {
     private TextView mTextView = null;
 
     /**
-     * Communicator that acts as an interface to the BasicPlugin's processor
-     */
-    private BasicProcessorCommunicator mBasicProcessorCommunicator = null;
-
-    /**
      * ServiceCaller for using Aurora's translation service
      */
     private TranslationServiceCaller mTranslationServiceCaller = null;
@@ -52,12 +46,13 @@ public class MainActivity extends PluginActivity {
      */
     private BasicPluginObject mBasicPluginObject = null;
 
+
     /**
-     * {@inheritDoc}
+     * Perform required initialization steps during the onCreate method.
+     * First of three functions called during onCreate.
      */
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    protected void initializeOnCreate(){
         setContentView(R.layout.activity_main);
 
         mTextView = findViewById(R.id.textView);
@@ -79,7 +74,7 @@ public class MainActivity extends PluginActivity {
         /*
          * Initialize the communicator
          */
-        mBasicProcessorCommunicator = new BasicProcessorCommunicator(getApplicationContext());
+        mProcessorCommunicator = new BasicProcessorCommunicator(getApplicationContext());
         /*
          * Initialize the TranslationServiceCaller
          */
@@ -90,16 +85,28 @@ public class MainActivity extends PluginActivity {
          */
         mBasicPluginObject = new BasicPluginObject("");
         mBasicPluginObject.setResult(mTextView.getText().toString());
+    }
 
-        // Handle the data that came with the intent that opened BasicPlugin
-        Intent intentThatStartedThisActivity = getIntent();
 
-        // Process the intent, resulting in a BasicPluginObject
-        // This line executes all framework fuunctionality offered by PluginActivity
-        mBasicPluginObject = processIntent(intentThatStartedThisActivity, mBasicProcessorCommunicator,
+    /**
+     * Make a call to the framework function to process the intent.
+     * This function needs to be implement to select the proper variable to assign the result to.
+     * Second of three functions called during onCreate.
+     *
+     * @param intentThatStartedThisActivity Intent that started the activity. Handled by the framework
+     */
+    @Override
+    protected void callProcessIntent(Intent intentThatStartedThisActivity){
+        mBasicPluginObject = processIntent(intentThatStartedThisActivity, mProcessorCommunicator,
                 BasicPluginObject.class);
+    }
 
-        // Show the processed text
+    /**
+     * Show the processed BasicPluginObject.
+     * Third of three functions called during onCreate.
+     */
+    @Override
+    protected void representPluginObject(){
         if (mBasicPluginObject != null) {
             String text =
                     mBasicPluginObject.getFileName() +
@@ -115,7 +122,6 @@ public class MainActivity extends PluginActivity {
                 }
             }
         }
-
     }
 
 

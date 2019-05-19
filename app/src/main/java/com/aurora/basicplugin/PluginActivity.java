@@ -2,6 +2,7 @@ package com.aurora.basicplugin;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -27,10 +28,44 @@ public abstract class PluginActivity extends AppCompatActivity {
     private static final String LOG_TAG = PluginActivity.class.getSimpleName();
 
     /**
+     * Communicator that acts as an interface to the plugin's processor
+     */
+    protected ProcessorCommunicator mProcessorCommunicator = null;
+
+
+    abstract void initializeOnCreate();
+
+    abstract void callProcessIntent(Intent intentThatstartedThisActivity);
+
+    abstract void representPluginObject();
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        initializeOnCreate();
+
+        // Handle the data that came with the intent that opened BasicPlugin
+        Intent intentThatStartedThisActivity = getIntent();
+        callProcessIntent(intentThatStartedThisActivity);
+
+        representPluginObject();
+    }
+
+    /**
      * Processes the intent that started this activity
      *
      * @param intentThatStartedThisActivity the intent that started this activity
-     * @return boolean indicating if processing the intent was successful
+     * @param processorCommunicator         the processorCommunicator that should process a received
+     *                                      ExtractedText object
+     * @param type                          The class of the specific PluginObject (i.e. extending
+     *                                      PluginObject) that is returned by the processorCommunicator
+     *                                      and used by the plugin
+     *
+     * @return The cached PluginObject that Aurora delivered or the PluginObject that is the result
+     * of the pipeline function of the ProcessorCommunicator.
      */
     protected <T extends PluginObject> T processIntent(Intent intentThatStartedThisActivity, ProcessorCommunicator
                                          processorCommunicator, Class<T> type) {
@@ -73,7 +108,10 @@ public abstract class PluginActivity extends AppCompatActivity {
      * Processes the read file as a plugin object
      *
      * @param fileUri the uri of the file
-     * @return true if the processing was successful, false otherwise
+     * @param type    The class of the specific PluginObject (i.e. extending  PluginObject) that is
+     *                used by the plugin
+     *
+     * @return The cached PluginObject that Aurora delivered.
      */
     private <T extends PluginObject> T processPluginObject(Uri fileUri, @NonNull Class<T> type) {
         T pluginObject = null;
@@ -89,8 +127,10 @@ public abstract class PluginActivity extends AppCompatActivity {
     /**
      * Processes the read file as an extracted text object
      *
-     * @param fileUri the uri of the file
-     * @return true if successful, false otherwise
+     * @param fileUri                   the uri of the file
+     * @param processorCommunicator     the processorCommunicator that should process a received
+     *                                  ExtractedText object
+     * @return The PluginObject that is the result of the pipeline function of the ProcessorCommunicator.
      */
     private <T extends PluginObject> T processExtractedText(Uri fileUri, ProcessorCommunicator
             processorCommunicator) {
