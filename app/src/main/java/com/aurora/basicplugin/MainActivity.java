@@ -118,7 +118,7 @@ public class MainActivity extends PluginActivity {
 
     }
 
-    
+
     /**
      * Returns an image view for a single bitmap. This is intended for use in the galery.
      *
