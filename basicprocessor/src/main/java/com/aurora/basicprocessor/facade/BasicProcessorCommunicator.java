@@ -75,7 +75,6 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
             if (!tokens.isEmpty()) {
                 CoreLabel token = tokens.get(0);
                 // This log is currently to manually check if NLP is working.
-                // TODO: Add test for this
                 Log.d("NLP", token.tag());
             }
         }

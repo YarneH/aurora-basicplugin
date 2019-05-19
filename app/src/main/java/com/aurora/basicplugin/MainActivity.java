@@ -91,7 +91,9 @@ public class MainActivity extends AppCompatActivity {
          */
         mTranslationServiceCaller = new TranslationServiceCaller(getApplicationContext());
 
-        // TODO: DO these 2 lines something meaningfull?
+        /**
+         * Initialize a BasicPluginObject to avoid nuull pointers
+         */
         mBasicPluginObject = new BasicPluginObject("");
         mBasicPluginObject.setResult(mTextView.getText().toString());
 
@@ -254,8 +256,6 @@ public class MainActivity extends AppCompatActivity {
      * receives a View as an input (the view that is to be updated), but you might want to change
      * this to your liking for your plugin.
      */
-    // TODO: Maybe move abstract version to auroralib instead of ProcessorTranslationThread and make
-    //  onPostExecute abstract
     public static class TranslationTask extends AsyncTask<Void, Void, List<String>> {
         private List<String> mSentences;
         private String mSourceLanguage;
