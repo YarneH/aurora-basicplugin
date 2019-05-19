@@ -54,18 +54,19 @@ public abstract class PluginActivity extends AppCompatActivity {
         String inputType =
                 intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TYPE);
 
+        T pluginObject = null;
         // Switch on the different kinds of input types that could be in the temp file
         if (Constants.PLUGIN_INPUT_TYPE_EXTRACTED_TEXT.equals(inputType)) {
-            return processExtractedText(fileUri, processorCommunicator, type);
+            pluginObject = processExtractedText(fileUri, processorCommunicator);
 
         } else if (Constants.PLUGIN_INPUT_TYPE_OBJECT.equals(inputType)) {
-            return processPluginObject(fileUri, type);
+            pluginObject = processPluginObject(fileUri, type);
 
         } else {
             Toast.makeText(this, "ERROR: The intent had an unsupported input type.",
                     Snackbar.LENGTH_LONG).show();
-            return null;
         }
+        return pluginObject;
     }
 
     /**
@@ -92,7 +93,7 @@ public abstract class PluginActivity extends AppCompatActivity {
      * @return true if successful, false otherwise
      */
     private <T extends PluginObject> T processExtractedText(Uri fileUri, ProcessorCommunicator
-            processorCommunicator, @NonNull Class<T> type) {
+            processorCommunicator) {
         T pluginObject = null;
         try {
             ExtractedText inputText = ExtractedText.getExtractedTextFromFile(fileUri,
