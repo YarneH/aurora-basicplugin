@@ -3,6 +3,7 @@ package com.aurora.basicprocessor.facade;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -50,18 +51,22 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
         // Get the images
         List<ExtractedImage> images = extractedText.getImages();
 
-        for(ExtractedImage image: images) {
+        for (ExtractedImage image : images) {
             Bitmap bitmap = image.getBitmap();
-            if(bitmap != null) {
+            if (bitmap != null) {
                 res.getImages().add(bitmap);
             }
         }
 
-        // Log whether there are NLP tags
-        if(extractedText.getTitleAnnotation() != null) {
-            List<CoreMap> sentences = extractedText.getTitleAnnotation().get(CoreAnnotations.SentencesAnnotation.class);
+        // If API level is at least 26, call NLP services
+        // This code is only for illustration and only logs messages. 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            // Log whether there are NLP tags
+            if (extractedText.getTitleAnnotation() != null) {
+                List<CoreMap> sentences = extractedText.getTitleAnnotation().get(CoreAnnotations.SentencesAnnotation.class);
 
-            processSentences(sentences);
+                processSentences(sentences);
+            }
         }
         return res;
     }
