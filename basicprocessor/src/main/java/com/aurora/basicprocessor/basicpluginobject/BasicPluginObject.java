@@ -10,8 +10,6 @@ import com.google.gson.annotations.JsonAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.aurora.basicprocessor.PluginConstants.UNIQUE_PLUGIN_NAME;
-
 /**
  * A concrete PluginObject that only has a String and possibly a list of Images,
  * which are to be shown in the environment
@@ -26,10 +24,10 @@ public class BasicPluginObject extends PluginObject {
      * The possibly empty list of images from the file that is opened
      */
     @JsonAdapter(BitmapListAdapter.class)
-    private List<Bitmap> mImages = new ArrayList<>();
+    private final List<Bitmap> mImages = new ArrayList<>();
 
     public BasicPluginObject(String fileName) {
-        super(fileName, UNIQUE_PLUGIN_NAME);
+        super(fileName);
         mResult = "";
     }
 
@@ -38,13 +36,6 @@ public class BasicPluginObject extends PluginObject {
     public void setResult(String result) { mResult = result; }
 
     public @NonNull List<Bitmap> getImages() {
-        if(mImages == null) {
-            return new ArrayList<>();
-        }
         return mImages;
-    }
-
-    public void setImages(@NonNull final List<Bitmap> images) {
-        this.mImages = images;
     }
 }

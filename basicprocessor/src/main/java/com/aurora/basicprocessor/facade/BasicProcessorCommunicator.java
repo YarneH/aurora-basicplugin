@@ -2,13 +2,14 @@ package com.aurora.basicprocessor.facade;
 
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.ExtractedImage;
+import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.PluginObject;
 import com.aurora.auroralib.ProcessorCommunicator;
-import com.aurora.basicprocessor.PluginConstants;
 import com.aurora.basicprocessor.basicpluginobject.BasicPluginObject;
 
 import java.util.List;
@@ -27,7 +28,7 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
          * A UNIQUE_PLUGIN_NAME needs to be passed to the constructor of ProcessorCommunicator for
          * proper configuration of the cache
          */
-        super(PluginConstants.UNIQUE_PLUGIN_NAME, context);
+        super(context);
     }
 
     /**
@@ -39,7 +40,7 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
      * extractedText.toString(). It also contains Images if these were present.
      */
     @Override
-    protected PluginObject process(ExtractedText extractedText) {
+    protected PluginObject process(@NonNull ExtractedText extractedText) {
 
         BasicPluginObject res = new BasicPluginObject(extractedText.getFilename());
 
@@ -50,7 +51,10 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
         List<ExtractedImage> images = extractedText.getImages();
 
         for(ExtractedImage image: images) {
-            res.getImages().add(image.getBitmap());
+            Bitmap bitmap = image.getBitmap();
+            if(bitmap != null) {
+                res.getImages().add(bitmap);
+            }
         }
 
         // Log whether there are NLP tags
@@ -72,7 +76,6 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
             if (!tokens.isEmpty()) {
                 CoreLabel token = tokens.get(0);
                 // This log is currently to manually check if NLP is working.
-                // TODO: Add test for this
                 Log.d("NLP", token.tag());
             }
         }
