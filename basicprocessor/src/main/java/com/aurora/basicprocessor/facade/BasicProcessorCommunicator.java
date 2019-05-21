@@ -3,6 +3,7 @@ package com.aurora.basicprocessor.facade;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.aurora.auroralib.ExtractedImage;
@@ -39,7 +40,7 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
      * extractedText.toString(). It also contains Images if these were present.
      */
     @Override
-    protected PluginObject process(ExtractedText extractedText) {
+    protected PluginObject process(@NonNull ExtractedText extractedText) {
 
         BasicPluginObject res = new BasicPluginObject(extractedText.getFilename());
 
