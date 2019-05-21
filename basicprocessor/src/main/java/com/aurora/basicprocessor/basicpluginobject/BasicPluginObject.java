@@ -24,7 +24,7 @@ public class BasicPluginObject extends PluginObject {
      * The possibly empty list of images from the file that is opened
      */
     @JsonAdapter(BitmapListAdapter.class)
-    private List<Bitmap> mImages = new ArrayList<>();
+    private final List<Bitmap> mImages = new ArrayList<>();
 
     public BasicPluginObject(String fileName) {
         super(fileName);
@@ -36,13 +36,6 @@ public class BasicPluginObject extends PluginObject {
     public void setResult(String result) { mResult = result; }
 
     public @NonNull List<Bitmap> getImages() {
-        if(mImages == null) {
-            return new ArrayList<>();
-        }
         return mImages;
-    }
-
-    public void setImages(@NonNull final List<Bitmap> images) {
-        this.mImages = images;
     }
 }

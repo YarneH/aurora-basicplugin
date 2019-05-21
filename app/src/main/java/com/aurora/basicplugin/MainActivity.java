@@ -151,12 +151,12 @@ public class MainActivity extends PluginActivity {
      * receives a View as an input (the view that is to be updated), but you might want to change
      * this to your liking for your plugin.
      */
-    public static class TranslationTask extends AsyncTask<Void, Void, List<String>> {
-        private List<String> mSentences;
-        private String mSourceLanguage;
-        private String mDestinationLanguage;
-        private TranslationServiceCaller mTranslationServiceCaller;
-        private TextView mTextView;
+    static class TranslationTask extends AsyncTask<Void, Void, List<String>> {
+        private final List<String> mSentences;
+        private final String mSourceLanguage;
+        private final String mDestinationLanguage;
+        private final TranslationServiceCaller mTranslationServiceCaller;
+        private final TextView mTextView;
 
 
         TranslationTask(List<String> sentences, String sourceLanguage, String destinationLanguage,
