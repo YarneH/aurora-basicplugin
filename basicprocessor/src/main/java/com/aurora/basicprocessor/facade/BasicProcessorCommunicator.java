@@ -59,14 +59,14 @@ public class BasicProcessorCommunicator extends ProcessorCommunicator {
         }
 
         // If API level is at least 26, call NLP services
-        // This code is only for illustration and only logs messages. 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+        // This code is only for illustration and only logs messages.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                extractedText.getTitleAnnotation() != null){
             // Log whether there are NLP tags
-            if (extractedText.getTitleAnnotation() != null) {
-                List<CoreMap> sentences = extractedText.getTitleAnnotation().get(CoreAnnotations.SentencesAnnotation.class);
+            List<CoreMap> sentences = extractedText.getTitleAnnotation().get(
+                    CoreAnnotations.SentencesAnnotation.class);
 
-                processSentences(sentences);
-            }
+            processSentences(sentences);
         }
         return res;
     }
